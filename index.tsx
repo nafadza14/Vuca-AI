@@ -44,7 +44,8 @@ import {
   Settings,
   LogOut,
   Film,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Heart
 } from 'lucide-react';
 
 // --- Types & Interfaces ---
@@ -476,26 +477,72 @@ const Hero = ({ onStart }: { onStart: () => void }) => {
 
 const SolutionSection = () => {
     const { t } = useAppContext();
+    const viralResults = [
+        { id: 1, img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80', views: '2.4M', platform: 'TikTok' },
+        { id: 2, img: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=400&q=80', views: '850K', platform: 'YouTube' },
+        { id: 3, img: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&q=80', views: '1.1M', platform: 'Instagram' },
+        { id: 4, img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80', views: '3.2M', platform: 'TikTok' },
+        { id: 5, img: 'https://images.unsplash.com/photo-1593341646261-fa50669169a6?w=400&q=80', views: '500K', platform: 'Instagram' },
+        { id: 6, img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&q=80', views: '1.5M', platform: 'YouTube' },
+    ];
+
+    // Duplicate array for infinite seamless scroll
+    const marqueeItems = [...viralResults, ...viralResults];
+
     return (
-        <section className="py-20 bg-black/20">
-            <div className="max-w-7xl mx-auto px-4 text-center">
-                 <div className="grid md:grid-cols-3 gap-8">
-                     <div className="p-8 rounded-3xl bg-white/5 border border-white/5 backdrop-blur-sm">
-                         <div className="w-12 h-12 bg-vuca-blue/20 rounded-xl flex items-center justify-center text-vuca-blue mb-4 mx-auto"><Sparkles /></div>
-                         <h3 className="text-xl font-bold text-white mb-2">{t('featureSmart')}</h3>
-                         <p className="text-gray-400">Advanced algorithms understand your product.</p>
-                     </div>
-                     <div className="p-8 rounded-3xl bg-white/5 border border-white/5 backdrop-blur-sm">
-                         <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center text-purple-400 mb-4 mx-auto"><Zap /></div>
-                         <h3 className="text-xl font-bold text-white mb-2">{t('featureFast')}</h3>
-                         <p className="text-gray-400">Generate videos in under 60 seconds.</p>
-                     </div>
-                      <div className="p-8 rounded-3xl bg-white/5 border border-white/5 backdrop-blur-sm">
-                         <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center text-green-400 mb-4 mx-auto"><Globe /></div>
-                         <h3 className="text-xl font-bold text-white mb-2">Multi-Language</h3>
-                         <p className="text-gray-400">Support for English and Bahasa Indonesia.</p>
-                     </div>
-                 </div>
+        <section className="py-24 bg-black/20 overflow-hidden relative">
+            <div className="max-w-7xl mx-auto px-4 text-center mb-12 relative z-20">
+                 <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-6 animate-fade-in-up">
+                    Viral Results Across Platforms
+                 </h2>
+                 <p className="text-gray-400 max-w-2xl mx-auto text-lg animate-fade-in-up animation-delay-200">
+                    See what creators are generating with Vuca AI. From TikTok trends to YouTube Shorts, our AI creates content that performs.
+                 </p>
+            </div>
+            
+            <div className="relative w-full py-10">
+                {/* Gradient Masks for Fade Effect */}
+                <div className="absolute left-0 top-0 bottom-0 w-20 md:w-40 bg-gradient-to-r from-[#0A0F1F] via-[#0A0F1F]/80 to-transparent z-10 pointer-events-none"></div>
+                <div className="absolute right-0 top-0 bottom-0 w-20 md:w-40 bg-gradient-to-l from-[#0A0F1F] via-[#0A0F1F]/80 to-transparent z-10 pointer-events-none"></div>
+
+                {/* Marquee Container */}
+                <div className="flex gap-6 animate-marquee w-max hover:pause">
+                    {marqueeItems.map((item, idx) => (
+                        <div key={`${item.id}-${idx}`} className="relative w-[200px] h-[350px] md:w-[240px] md:h-[420px] rounded-2xl overflow-hidden border border-white/10 flex-shrink-0 group transform hover:scale-105 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,71,255,0.3)] hover:border-vuca-blue/50">
+                             <img src={item.img} alt="Viral Content" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
+                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
+                             
+                             {/* Stats Overlay */}
+                             <div className="absolute bottom-4 left-4 right-4 z-20">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-md ${item.platform === 'TikTok' ? 'bg-black border border-gray-700' : item.platform === 'YouTube' ? 'bg-red-600' : 'bg-gradient-to-tr from-yellow-400 to-purple-600'}`}>
+                                        {item.platform === 'TikTok' ? 'TT' : item.platform === 'YouTube' ? <Youtube size={12} /> : <Instagram size={12} />}
+                                    </div>
+                                    <span className="text-xs font-bold text-gray-300 drop-shadow-md">{item.platform}</span>
+                                </div>
+                                <div className="flex justify-between items-end">
+                                    <div>
+                                        <div className="text-2xl font-bold text-white leading-none drop-shadow-lg">{item.views}</div>
+                                        <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mt-1">Views</div>
+                                    </div>
+                                    <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+                                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_10px_#4ade80]"></div>
+                                    </div>
+                                </div>
+                             </div>
+                             
+                             {/* Floating Elements mimicking UI */}
+                             <div className="absolute top-4 right-4 flex flex-col gap-3 z-20">
+                                 <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/10">
+                                    <Heart size={14} fill="currentColor" className="text-white" />
+                                 </div>
+                                  <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/10">
+                                    <Share2 size={14} />
+                                 </div>
+                             </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </section>
     )
