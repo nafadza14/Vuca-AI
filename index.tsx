@@ -934,23 +934,28 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
+                model: 'gemini-3-pro-preview', // Changed to gemini-3-pro-preview as requested
                 contents: `Write a short, engaging video script (under 60 seconds) for a ${template.platform} video about: "${prompt}". 
                 The category is ${template.category}.
                 Tone: Friendly, Simple, Confident.
                 Structure: Hook, Value, Call to Action.
-                Language: ${useAppContext().lang === 'id' ? 'Bahasa Indonesia' : 'English'}.
+                Language: ${lang === 'id' ? 'Bahasa Indonesia' : 'English'}.
                 Format the output simply as the spoken script text.`,
                 config: {
                     systemInstruction: "You are an expert viral content scripter.",
                 }
             });
             
-            setScript(response.text || "Failed to generate script.");
-            setStep(2);
+            const generatedText = response.text;
+            if (generatedText) {
+                setScript(generatedText);
+                setStep(2); // Move to next step
+            } else {
+                 alert("AI generated empty response. Please try again.");
+            }
         } catch (e) {
-            console.error(e);
-            setScript("Error connecting to AI service. Please try again.");
+            console.error("Script generation error:", e);
+            alert("Error generating script. Please check your connection or try again.");
         } finally {
             setLoading(false);
         }
@@ -1420,49 +1425,51 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
 };
 
 const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => void }) => {
-    const { t } = useAppContext();
-    const [searchTerm, setSearchTerm] = useState('');
+    const { t, user } = useAppContext();
+    const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
 
-    const categories = ['All', 'Fashion', 'Tech', 'Food', 'Beauty', 'Home', 'Fitness'];
-
-    const filteredTemplates = MOCK_TEMPLATES.filter(t => {
-        const matchesSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = selectedCategory === 'All' || t.category === selectedCategory;
+    const categories = ['All', 'Fashion', 'Tech', 'Food', 'Beauty', 'Home', 'Fitness', 'Gaming'];
+    
+    const filteredTemplates = MOCK_TEMPLATES.filter(template => {
+        const matchesSearch = template.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = selectedCategory === 'All' || template.category === selectedCategory;
         return matchesSearch && matchesCategory;
     });
 
     return (
-        <div className="min-h-screen pt-24 px-4 md:px-8 bg-[#0A0F1F] pb-20">
-             <AmbientBackground mode="dashboard" />
-             
-             <div className="max-w-7xl mx-auto">
-                <div className="mb-8">
+        <div className="min-h-screen pt-20 pb-12">
+            <AmbientBackground mode="dashboard" />
+            
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Dashboard Header */}
+                <div className="mb-10 animate-fade-in-up">
                     <h1 className="text-3xl md:text-4xl font-heading font-bold text-white mb-2">{t('dashboardTitle')}</h1>
-                    <p className="text-gray-400">Select a viral template to get started.</p>
+                    <p className="text-gray-400">Welcome back, <span className="text-white font-bold">{user.email?.split('@')[0]}</span>. Create your next viral hit.</p>
                 </div>
 
-                {/* Removed sticky, fixed background issues */}
-                <div className="flex flex-col md:flex-row gap-4 mb-8 relative z-20">
+                {/* Search & Filter Bar - Removed Sticky */}
+                <div className="relative z-20 mb-10 flex flex-col md:flex-row gap-4 animate-fade-in-up animation-delay-2000">
                     <div className="relative flex-1">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                         <input 
                             type="text" 
                             placeholder={t('searchPlaceholder')}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-[#131B2E] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-vuca-blue shadow-lg transition-all hover:border-white/20"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-[#0E1529] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-vuca-blue shadow-lg transition-all"
                         />
                     </div>
+                    
                     <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
                         {categories.map(cat => (
                             <button 
                                 key={cat}
                                 onClick={() => setSelectedCategory(cat)}
-                                className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${
+                                className={`px-5 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all border ${
                                     selectedCategory === cat 
                                     ? 'bg-vuca-blue text-white border-vuca-blue shadow-lg shadow-blue-900/30' 
-                                    : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+                                    : 'bg-[#0E1529] text-gray-400 border-white/10 hover:text-white hover:border-white/20'
                                 }`}
                             >
                                 {cat}
@@ -1470,74 +1477,89 @@ const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => vo
                         ))}
                     </div>
                 </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 z-10 relative">
-                    {filteredTemplates.map(template => (
-                        <TemplateCard key={template.id} template={template} onSelect={onSelectTemplate} />
-                    ))}
-                </div>
-             </div>
+                
+                {/* Grid */}
+                {filteredTemplates.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fade-in-up animation-delay-4000">
+                        {filteredTemplates.map(template => (
+                            <TemplateCard key={template.id} template={template} onSelect={onSelectTemplate} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-20 animate-fade-in-up">
+                        <div className="inline-block p-4 rounded-full bg-white/5 mb-4">
+                            <Search size={32} className="text-gray-500" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">No templates found</h3>
+                        <p className="text-gray-400">Try adjusting your search or category filter.</p>
+                        <button 
+                            onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }}
+                            className="mt-6 text-vuca-blue font-bold hover:underline"
+                        >
+                            Clear all filters
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
 
 const App = () => {
   const [lang, setLang] = useState<Language>('en');
-  const [view, setView] = useState('landing'); // landing, auth, dashboard, editor
   const [user, setUser] = useState<UserState>({ isLoggedIn: false, email: null, plan: 'free' });
+  const [view, setView] = useState('landing'); // landing, auth, dashboard, editor
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [showPricingModal, setShowPricingModal] = useState(false);
 
   const t = (key: string) => TRANSLATIONS[key]?.[lang] || key;
 
   const login = (email: string) => {
-    setUser({ isLoggedIn: true, email, plan: 'free' });
-    setView('dashboard');
+      setUser({ isLoggedIn: true, email, plan: 'free' });
+      setView('dashboard');
   };
 
   const logout = () => {
-    setUser({ isLoggedIn: false, email: null, plan: 'free' });
-    setView('landing');
+      setUser({ isLoggedIn: false, email: null, plan: 'free' });
+      setView('landing');
   };
 
   const upgradePlan = (plan: UserPlan) => {
-    setUser(prev => ({ ...prev, plan }));
-    setShowPricingModal(false);
+      setUser({ ...user, plan });
+      setShowPricingModal(false);
   };
   
-  const handleSelectTemplate = (template: Template) => {
+  const handleTemplateSelect = (template: Template) => {
       setSelectedTemplate(template);
       setView('editor');
-  }
-
-  const handleBackToDashboard = () => {
-      setSelectedTemplate(null);
-      setView('dashboard');
-  }
+  };
 
   return (
     <AppContext.Provider value={{ lang, setLang, t, user, login, logout, upgradePlan, showPricingModal, setShowPricingModal }}>
-      <div className="font-sans text-gray-100 min-h-screen">
+      <div className="min-h-screen font-sans text-gray-100 bg-[#0A0F1F]">
         <Navbar onViewChange={setView} />
         
-        {view === 'landing' && (
-          <>
-            <Hero onStart={() => setView('auth')} />
-            <SolutionSection />
-            <HowItWorks />
-            <FAQ />
-            <Footer />
-            <WhatsAppFloat />
-          </>
-        )}
+        <main>
+          {view === 'landing' && (
+            <>
+                <Hero onStart={() => setView('auth')} />
+                <SolutionSection />
+                <HowItWorks />
+                <FAQ />
+                <Footer />
+            </>
+          )}
+          
+          {view === 'auth' && <AuthPage />}
+          
+          {view === 'dashboard' && <Dashboard onSelectTemplate={handleTemplateSelect} />}
+          
+          {view === 'editor' && selectedTemplate && (
+            <Editor template={selectedTemplate} onBack={() => setView('dashboard')} />
+          )}
+        </main>
 
-        {view === 'auth' && <AuthPage />}
-        
-        {view === 'dashboard' && <Dashboard onSelectTemplate={handleSelectTemplate} />}
-        
-        {view === 'editor' && selectedTemplate && (
-            <Editor template={selectedTemplate} onBack={handleBackToDashboard} />
-        )}
+        <WhatsAppFloat />
 
         {showPricingModal && (
             <PricingModal onClose={() => setShowPricingModal(false)} onUpgrade={upgradePlan} />
