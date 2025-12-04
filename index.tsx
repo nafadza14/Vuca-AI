@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Modality } from "@google/genai";
 import { 
   Play, 
   Layout, 
@@ -32,7 +32,13 @@ import {
   Trash2,
   Twitter,
   Instagram,
-  Youtube
+  Youtube,
+  MessageCircle,
+  Plus,
+  Minus,
+  Volume2,
+  Users,
+  RefreshCw
 } from 'lucide-react';
 
 // --- Types & Interfaces ---
@@ -110,10 +116,25 @@ const MOCK_TEMPLATES: Template[] = [
 ];
 
 const VOICES = [
-    { id: 'bella', name: 'Bella (Friendly)', lang: 'en' },
-    { id: 'adam', name: 'Adam (Bold)', lang: 'en' },
-    { id: 'siti', name: 'Siti (Professional)', lang: 'id' },
-    { id: 'budi', name: 'Budi (Casual)', lang: 'id' }
+    { id: 'Aoede', name: 'Aoede (Confident)', lang: 'en' },
+    { id: 'Charon', name: 'Charon (Deep)', lang: 'en' },
+    { id: 'Kore', name: 'Kore (Friendly)', lang: 'en' },
+    { id: 'Fenrir', name: 'Fenrir (Energetic)', lang: 'en' }
+];
+
+const AVATARS = [
+    { id: 'sarah', name: 'Sarah (Asian)', url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&q=80' },
+    { id: 'mike', name: 'Mike (Western)', url: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80' },
+    { id: 'lisa', name: 'Lisa (Casual)', url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=80' },
+    { id: 'david', name: 'David (Pro)', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80' },
+];
+
+const FAQ_DATA = [
+    { q: "What is Vuca AI?", a: "Vuca AI is an automated video generation platform designed specifically for affiliate marketers. We help you turn product links into viral user-generated content (UGC) scripts and videos in minutes." },
+    { q: "Is it free to start?", a: "We offer a Starter plan at just $10/month. We do not have a free tier, but our pricing is designed to be affordable for affiliates scaling their revenue." },
+    { q: "Can I use my own footage?", a: "Yes! You can upload your own product photos and videos. Alternatively, you can use our AI models to present your product for you." },
+    { q: "What languages do you support?", a: "Currently, we support English and Bahasa Indonesia, with optimized voiceovers for both markets." },
+    { q: "Which platforms are supported?", a: "Our templates are optimized for TikTok, Shopee Video, Instagram Reels, and YouTube Shorts." },
 ];
 
 // --- Context ---
@@ -150,6 +171,34 @@ const AppContext = createContext<AppContextType>({
 
 const useAppContext = () => useContext(AppContext);
 
+// --- Helper Functions ---
+
+const blobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+            resolve(reader.result.split(',')[1]);
+        } else {
+            reject(new Error("Failed to convert blob to base64"));
+        }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
+const urlToBase64 = async (url: string): Promise<string> => {
+  try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return await blobToBase64(blob);
+  } catch (error) {
+      console.error("Error converting URL to base64:", error);
+      throw error;
+  }
+};
+
 // --- Visual Components ---
 
 const AmbientBackground = ({ mode = 'hero' }: { mode?: 'hero' | 'pricing' | 'dashboard' | 'subtle' }) => {
@@ -185,6 +234,25 @@ const AmbientBackground = ({ mode = 'hero' }: { mode?: 'hero' | 'pricing' | 'das
            style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}>
       </div>
     </div>
+  );
+};
+
+const WhatsAppFloat = () => {
+  return (
+    <a 
+      href="https://wa.me/6285157626264" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="fixed bottom-6 right-6 z-50 group"
+    >
+      <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-20"></div>
+      <div className="relative bg-green-600 hover:bg-green-500 text-white p-4 rounded-full shadow-[0_4px_20px_rgba(34,197,94,0.4)] transition-all transform hover:scale-110 flex items-center justify-center">
+         <MessageCircle size={28} fill="white" className="text-white" />
+         <span className="absolute right-full mr-3 bg-white text-gray-900 text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg">
+           Ask Me!
+         </span>
+      </div>
+    </a>
   );
 };
 
@@ -418,6 +486,40 @@ const SolutionSection = () => {
     </section>
   );
 }
+
+const FAQ = () => {
+    const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+    return (
+        <section className="py-24 bg-[#080C19] relative">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-4">Frequently Asked Questions</h2>
+                    <p className="text-gray-400">Everything you need to know about Vuca AI.</p>
+                </div>
+                
+                <div className="space-y-4">
+                    {FAQ_DATA.map((item, index) => (
+                        <div key={index} className="border border-white/10 rounded-2xl bg-white/5 overflow-hidden transition-all">
+                            <button 
+                                onClick={() => setActiveIndex(activeIndex === index ? null : index)}
+                                className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
+                            >
+                                <span className="text-lg font-bold text-white">{item.q}</span>
+                                {activeIndex === index ? <Minus size={20} className="text-vuca-blue" /> : <Plus size={20} className="text-gray-400" />}
+                            </button>
+                            <div className={`overflow-hidden transition-all duration-300 ${activeIndex === index ? 'max-h-48' : 'max-h-0'}`}>
+                                <div className="p-6 pt-0 text-gray-400 leading-relaxed border-t border-white/5 mt-2">
+                                    {item.a}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+};
 
 const HowItWorks = () => {
     const { t } = useAppContext();
@@ -808,9 +910,22 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
     const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
     
     // Step 2 Configurations
+    const [visualMode, setVisualMode] = useState<'upload' | 'avatar' | 'generate'>('upload');
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+    const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0].id);
     const [selectedVoice, setSelectedVoice] = useState(VOICES[0].id);
     const [hasSubtitles, setHasSubtitles] = useState(true);
+    const [audioUrl, setAudioUrl] = useState<string | null>(null);
+    const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+    
+    // Image Generation
+    const [imagePrompt, setImagePrompt] = useState('');
+    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+    const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+
+    // Final Video
+    const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
+    
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleGenerateScript = async () => {
@@ -825,7 +940,10 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                 Tone: Friendly, Simple, Confident.
                 Structure: Hook, Value, Call to Action.
                 Language: ${useAppContext().lang === 'id' ? 'Bahasa Indonesia' : 'English'}.
-                Format the output simply as the spoken script text.`
+                Format the output simply as the spoken script text.`,
+                config: {
+                    systemInstruction: "You are an expert viral content scripter.",
+                }
             });
             
             setScript(response.text || "Failed to generate script.");
@@ -838,16 +956,154 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
         }
     };
 
-    const handleGenerateVideo = () => {
+    const handleGenerateImage = async () => {
+        if (!imagePrompt) return;
+        setIsGeneratingImage(true);
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            // Using gemini-3-pro-image-preview for high quality generation
+            const response = await ai.models.generateContent({
+                model: 'gemini-3-pro-image-preview',
+                contents: {
+                   parts: [{ text: imagePrompt }]
+                },
+                config: {
+                    tools: [{ googleSearch: {} }], // Enable search grounding for better context if needed
+                }
+            });
+
+            // Extract image from parts
+            let foundImage = null;
+             if (response.candidates?.[0]?.content?.parts) {
+                for (const part of response.candidates[0].content.parts) {
+                    if (part.inlineData) {
+                        foundImage = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                        break;
+                    }
+                }
+            }
+
+            if (foundImage) {
+                setGeneratedImage(foundImage);
+            } else {
+                 alert("No image generated. Please try a different prompt.");
+            }
+
+        } catch (e) {
+            console.error(e);
+            alert("Image generation failed. Please try again.");
+        } finally {
+            setIsGeneratingImage(false);
+        }
+    };
+
+    const handleGenerateAudio = async () => {
+        setIsGeneratingAudio(true);
+        try {
+             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+             const response = await ai.models.generateContent({
+                  model: "gemini-2.5-flash-preview-tts",
+                  contents: [{ parts: [{ text: script.substring(0, 300) }] }], // Limit char count for preview
+                  config: {
+                    responseModalities: [Modality.AUDIO],
+                    speechConfig: {
+                        voiceConfig: {
+                          prebuiltVoiceConfig: { voiceName: selectedVoice },
+                        },
+                    },
+                  },
+             });
+
+            const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+            if (base64Audio) {
+                const audioBlob = await (await fetch(`data:audio/mp3;base64,${base64Audio}`)).blob();
+                const url = URL.createObjectURL(audioBlob);
+                setAudioUrl(url);
+                
+                // Play immediately
+                const audio = new Audio(url);
+                audio.play();
+            }
+
+        } catch (e) {
+            console.error("Audio generation error:", e);
+        } finally {
+            setIsGeneratingAudio(false);
+        }
+    }
+
+    const handleGenerateVideo = async () => {
         if (user.plan === 'free') {
             setShowPricingModal(true);
-        } else {
-            // Simulate generation
-            setIsGeneratingVideo(true);
-            setTimeout(() => {
+            return;
+        }
+
+        // Check for billing key for Veo
+        // We cast to any to avoid TS errors if types are missing in this file context,
+        // but the main fix is removing the return value check on openSelectKey().
+        if (!await (window as any).aistudio.hasSelectedApiKey()) {
+             await (window as any).aistudio.openSelectKey();
+             // Race condition: wait slightly or re-instantiate logic if needed. 
+             // We'll proceed assuming success as per guidelines.
+        }
+
+        setIsGeneratingVideo(true);
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            
+            // Determine source image
+            let sourceImageBase64 = '';
+            if (visualMode === 'upload' && uploadedImage) {
+                // uploadedImage is a blob url, need to fetch it
+                sourceImageBase64 = await urlToBase64(uploadedImage);
+            } else if (visualMode === 'avatar') {
+                const currentAvatar = AVATARS.find(a => a.id === selectedAvatar);
+                if (currentAvatar) {
+                    sourceImageBase64 = await urlToBase64(currentAvatar.url);
+                }
+            } else if (visualMode === 'generate' && generatedImage) {
+                // generatedImage is already data url
+                sourceImageBase64 = generatedImage.split(',')[1];
+            }
+
+            if (!sourceImageBase64) {
+                alert("Please select or upload a visual source first.");
                 setIsGeneratingVideo(false);
-                alert("Video Generated Successfully! (Simulation)");
-            }, 3000);
+                return;
+            }
+
+            let operation = await ai.models.generateVideos({
+                model: 'veo-3.1-fast-generate-preview',
+                prompt: `Cinematic video of this character/product. ${prompt.substring(0,100)}`,
+                image: {
+                    imageBytes: sourceImageBase64,
+                    mimeType: 'image/png', // Assumption: standard image format
+                },
+                config: {
+                    numberOfVideos: 1,
+                    resolution: '720p',
+                    aspectRatio: '9:16' // Vertical for social media
+                }
+            });
+
+            // Poll for completion
+            while (!operation.done) {
+                 await new Promise(resolve => setTimeout(resolve, 5000));
+                 operation = await ai.operations.getVideosOperation({operation: operation});
+            }
+
+            const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+            if (downloadLink) {
+                 // The URI requires the API key appended
+                 const finalVideoUrl = `${downloadLink}&key=${process.env.API_KEY}`;
+                 setGeneratedVideoUrl(finalVideoUrl);
+            }
+
+        } catch (e) {
+            console.error("Video generation failed:", e);
+            alert("Failed to generate video. Please try again later.");
+        } finally {
+            setIsGeneratingVideo(false);
         }
     };
     
@@ -858,6 +1114,14 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
             setUploadedImage(url);
         }
     };
+    
+    const currentAvatar = AVATARS.find(a => a.id === selectedAvatar);
+    
+    // Determine preview image source for UI display
+    let previewImageSrc = template.thumbnailUrl;
+    if (visualMode === 'upload' && uploadedImage) previewImageSrc = uploadedImage;
+    if (visualMode === 'avatar' && currentAvatar) previewImageSrc = currentAvatar.url;
+    if (visualMode === 'generate' && generatedImage) previewImageSrc = generatedImage;
 
     return (
         <div className="min-h-screen pt-20 flex flex-col md:flex-row bg-[#0A0F1F]">
@@ -906,30 +1170,35 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
 
                     {step >= 2 && (
                         <div className="animate-fade-in-up space-y-8">
-                            {/* Script Editor Section */}
+                            
+                            {/* Visual Source Selection */}
                             <div>
-                                <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <CheckCircle size={14} className="text-green-500" /> {t('scriptResult')}
-                                </label>
-                                <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-gray-300 text-sm leading-relaxed whitespace-pre-wrap font-mono shadow-inner hover:bg-white/10 transition-colors cursor-text relative group">
-                                    {script}
-                                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => setStep(1)} className="text-xs bg-white/10 hover:bg-white/20 px-2 py-1 rounded text-white">Edit</button>
-                                    </div>
+                                <h3 className="text-lg font-bold text-white mb-4">1. Visual Source</h3>
+                                <div className="flex bg-white/5 p-1 rounded-xl mb-4">
+                                    <button 
+                                        onClick={() => setVisualMode('upload')}
+                                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${visualMode === 'upload' ? 'bg-vuca-blue text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                                    >
+                                        Upload
+                                    </button>
+                                    <button 
+                                        onClick={() => setVisualMode('avatar')}
+                                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${visualMode === 'avatar' ? 'bg-vuca-blue text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                                    >
+                                        Avatar
+                                    </button>
+                                    <button 
+                                        onClick={() => setVisualMode('generate')}
+                                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${visualMode === 'generate' ? 'bg-vuca-blue text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                                    >
+                                        Generate
+                                    </button>
                                 </div>
-                            </div>
 
-                            <div className="border-t border-white/10 pt-6 space-y-6">
-                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                    Video Configuration
-                                </h3>
-
-                                {/* Upload Section */}
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Product Image / Model</label>
+                                {visualMode === 'upload' && (
                                     <div 
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="border-2 border-dashed border-white/10 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-vuca-blue/50 hover:bg-white/5 transition-all group relative overflow-hidden"
+                                        className="border-2 border-dashed border-white/10 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-vuca-blue/50 hover:bg-white/5 transition-all group relative overflow-hidden h-32"
                                     >
                                         <input 
                                             type="file" 
@@ -940,63 +1209,127 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                         />
                                         
                                         {uploadedImage ? (
-                                            <div className="relative w-full h-32">
-                                                <img src={uploadedImage} alt="Uploaded" className="w-full h-full object-cover rounded-lg" />
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                     <span className="text-xs font-bold text-white flex items-center gap-1"><Upload size={14}/> Change</span>
-                                                </div>
-                                                <button 
-                                                    onClick={(e) => { e.stopPropagation(); setUploadedImage(null); }}
-                                                    className="absolute top-2 right-2 p-1.5 bg-red-500/80 rounded-full text-white hover:bg-red-600"
-                                                >
-                                                    <Trash2 size={12} />
-                                                </button>
+                                            <>
+                                            <img src={uploadedImage} alt="Uploaded" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity" />
+                                            <div className="relative z-10 flex flex-col items-center">
+                                                <Upload size={20} className="text-white mb-2" />
+                                                <span className="text-xs font-bold text-white">Change Image</span>
                                             </div>
+                                            </>
                                         ) : (
                                             <>
-                                                <div className="w-10 h-10 rounded-full bg-vuca-blue/10 text-vuca-blue flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                                    <ImageIcon size={20} />
+                                                <div className="w-10 h-10 rounded-full bg-vuca-blue/10 text-vuca-blue flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                                    <Upload size={20} />
                                                 </div>
-                                                <span className="text-sm font-medium text-gray-300">Click to Upload Image</span>
-                                                <span className="text-xs text-gray-500 mt-1">Supports JPG, PNG</span>
+                                                <span className="text-xs font-medium text-gray-300">Upload Product Photo</span>
                                             </>
                                         )}
                                     </div>
-                                </div>
+                                )}
 
-                                {/* Controls Row */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    {/* Voice Selector */}
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2"><Mic size={14}/> AI Voiceover</label>
-                                        <div className="relative">
-                                            <select 
-                                                value={selectedVoice}
-                                                onChange={(e) => setSelectedVoice(e.target.value)}
-                                                className="w-full appearance-none bg-[#0E1529] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-vuca-blue cursor-pointer hover:bg-white/5"
+                                {visualMode === 'avatar' && (
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {AVATARS.map(avatar => (
+                                            <div 
+                                                key={avatar.id}
+                                                onClick={() => setSelectedAvatar(avatar.id)}
+                                                className={`relative rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${selectedAvatar === avatar.id ? 'border-vuca-blue shadow-[0_0_15px_rgba(0,71,255,0.4)]' : 'border-transparent hover:border-white/20'}`}
                                             >
-                                                {VOICES.filter(v => v.lang === lang).map(voice => (
-                                                    <option key={voice.id} value={voice.id}>{voice.name}</option>
-                                                ))}
-                                            </select>
-                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                                                <ChevronRight className="rotate-90" size={14} />
+                                                <img src={avatar.url} alt={avatar.name} className="w-full h-24 object-cover" />
+                                                <div className="absolute bottom-0 left-0 w-full bg-black/60 backdrop-blur-sm p-1.5 text-center">
+                                                    <span className="text-[10px] font-bold text-white block">{avatar.name}</span>
+                                                </div>
                                             </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {visualMode === 'generate' && (
+                                    <div className="space-y-3">
+                                        <textarea
+                                            value={imagePrompt}
+                                            onChange={(e) => setImagePrompt(e.target.value)}
+                                            placeholder="Describe the image you want (e.g., A cyberpunk product showcase of headphones on a neon table)"
+                                            className="w-full bg-[#0E1529] border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-vuca-blue"
+                                        />
+                                        <button 
+                                            onClick={handleGenerateImage}
+                                            disabled={isGeneratingImage || !imagePrompt}
+                                            className="w-full py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                        >
+                                            {isGeneratingImage ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
+                                            Generate Visual
+                                        </button>
+                                        {generatedImage && (
+                                            <div className="relative rounded-xl overflow-hidden border border-vuca-blue/50">
+                                                <img src={generatedImage} alt="Generated" className="w-full h-32 object-cover" />
+                                                <div className="absolute top-2 right-2 bg-black/60 px-2 py-1 rounded text-xs text-white">Generated</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Script Editor Section */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <Type size={14} /> 2. Edit Script
+                                </label>
+                                <textarea 
+                                    value={script}
+                                    onChange={(e) => setScript(e.target.value)}
+                                    className="w-full bg-[#0E1529] border border-white/10 rounded-xl p-4 text-gray-300 text-sm leading-relaxed font-mono shadow-inner focus:outline-none focus:border-vuca-blue/50 transition-colors min-h-[120px]"
+                                />
+                            </div>
+
+                            {/* Audio & Subtitles */}
+                            <div className="border-t border-white/10 pt-6 space-y-6">
+                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                    3. Audio & Captions
+                                </h3>
+
+                                <div className="space-y-4">
+                                    {/* Voice Selector & Generator */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Voiceover</label>
+                                        <div className="flex gap-2">
+                                            <div className="relative flex-1">
+                                                <select 
+                                                    value={selectedVoice}
+                                                    onChange={(e) => setSelectedVoice(e.target.value)}
+                                                    className="w-full appearance-none bg-[#0E1529] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-vuca-blue cursor-pointer hover:bg-white/5"
+                                                >
+                                                    {VOICES.filter(v => v.lang === lang).map(voice => (
+                                                        <option key={voice.id} value={voice.id}>{voice.name}</option>
+                                                    ))}
+                                                </select>
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                                                    <ChevronRight className="rotate-90" size={14} />
+                                                </div>
+                                            </div>
+                                            <button 
+                                                onClick={handleGenerateAudio}
+                                                disabled={isGeneratingAudio}
+                                                className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-xl transition-colors flex items-center justify-center tooltip-trigger"
+                                                title="Preview Voice"
+                                            >
+                                                {isGeneratingAudio ? <Loader2 className="animate-spin" size={20} /> : <Volume2 size={20} />}
+                                            </button>
                                         </div>
                                     </div>
 
                                     {/* Subtitle Toggle */}
-                                    <div>
-                                         <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2"><Type size={14}/> Subtitles</label>
-                                         <div 
-                                            onClick={() => setHasSubtitles(!hasSubtitles)}
-                                            className="bg-[#0E1529] border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
-                                         >
-                                             <span className="text-sm text-white">Auto-Captions</span>
-                                             <div className={`w-10 h-5 rounded-full relative transition-colors ${hasSubtitles ? 'bg-vuca-blue' : 'bg-gray-700'}`}>
-                                                 <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${hasSubtitles ? 'left-6' : 'left-1'}`} />
-                                             </div>
-                                         </div>
+                                    <div 
+                                        onClick={() => setHasSubtitles(!hasSubtitles)}
+                                        className="bg-[#0E1529] border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Type size={18} className="text-gray-400" />
+                                            <span className="text-sm text-white font-medium">Auto-Captions</span>
+                                        </div>
+                                        <div className={`w-10 h-5 rounded-full relative transition-colors ${hasSubtitles ? 'bg-vuca-blue' : 'bg-gray-700'}`}>
+                                            <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${hasSubtitles ? 'left-6' : 'left-1'}`} />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1004,9 +1337,10 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                             <div className="pt-4 flex flex-col gap-3">
                                 <button 
                                     onClick={handleGenerateVideo} 
-                                    className="w-full py-4 bg-vuca-yellow text-vuca-navy font-bold text-lg rounded-xl hover:bg-yellow-400 transition-all shadow-lg shadow-yellow-900/20 flex items-center justify-center gap-2 transform hover:-translate-y-1"
+                                    disabled={isGeneratingVideo}
+                                    className="w-full py-4 bg-vuca-yellow text-vuca-navy font-bold text-lg rounded-xl hover:bg-yellow-400 transition-all shadow-lg shadow-yellow-900/20 flex items-center justify-center gap-2 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {isGeneratingVideo ? <Loader2 className="animate-spin" /> : <>Export Video <ChevronRight size={18}/></>}
+                                    {isGeneratingVideo ? <><Loader2 className="animate-spin" /> Generating Video...</> : <>Export Video <ChevronRight size={18}/></>}
                                 </button>
                                 <button onClick={() => setStep(1)} className="w-full py-3 text-gray-400 text-sm hover:text-white transition-colors">Start Over</button>
                             </div>
@@ -1024,46 +1358,58 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                     </div>
 
                     {/* Mock Content inside phone */}
-                    <img 
-                        src={uploadedImage || template.thumbnailUrl} 
-                        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${uploadedImage ? 'opacity-90' : 'opacity-60'}`} 
-                        alt="Preview"
-                    />
+                    {generatedVideoUrl ? (
+                         <video 
+                            src={generatedVideoUrl} 
+                            className="absolute inset-0 w-full h-full object-cover" 
+                            controls 
+                            autoPlay 
+                            loop 
+                         />
+                    ) : (
+                         <img 
+                            src={previewImageSrc} 
+                            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500`} 
+                            alt="Preview"
+                        />
+                    )}
                     
-                    <div className="absolute inset-0 flex flex-col justify-between p-6 bg-gradient-to-b from-black/40 via-transparent to-black/80">
-                         <div className="mt-12 flex justify-between items-start">
-                             <div className="flex flex-col gap-2">
-                                {hasSubtitles && step >= 2 && (
-                                     <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-md border border-white/10 inline-flex items-center gap-1">
-                                         <Type size={10} className="text-vuca-yellow"/>
-                                         <span className="text-[10px] font-bold text-white uppercase tracking-wider">CC On</span>
-                                     </div>
+                    {!generatedVideoUrl && (
+                        <div className="absolute inset-0 flex flex-col justify-between p-6 bg-gradient-to-b from-black/40 via-transparent to-black/80">
+                             <div className="mt-12 flex justify-between items-start">
+                                 <div className="flex flex-col gap-2">
+                                    {hasSubtitles && step >= 2 && (
+                                         <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-md border border-white/10 inline-flex items-center gap-1">
+                                             <Type size={10} className="text-vuca-yellow"/>
+                                             <span className="text-[10px] font-bold text-white uppercase tracking-wider">CC On</span>
+                                         </div>
+                                    )}
+                                 </div>
+                                 
+                                 <div className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10">
+                                     <Globe size={16} />
+                                 </div>
+                             </div>
+                            
+                            <div className="space-y-4">
+                                 {step >= 2 && (
+                                    <div className="animate-fade-in-up bg-black/60 backdrop-blur-md p-4 rounded-2xl border-l-4 border-vuca-yellow shadow-lg">
+                                        <p className="text-white font-bold text-sm leading-snug">
+                                            "{script.split('\n')[0].replace(/"/g, '') || "Hook text here..."}"
+                                        </p>
+                                    </div>
                                 )}
-                             </div>
-                             
-                             <div className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10">
-                                 <Globe size={16} />
-                             </div>
-                         </div>
-                        
-                        <div className="space-y-4">
-                             {step >= 2 && (
-                                <div className="animate-fade-in-up bg-black/60 backdrop-blur-md p-4 rounded-2xl border-l-4 border-vuca-yellow shadow-lg">
-                                    <p className="text-white font-bold text-sm leading-snug">
-                                        "{script.split('\n')[0].replace(/"/g, '') || "Hook text here..."}"
-                                    </p>
-                                </div>
-                            )}
-
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 border-2 border-white shadow-md" />
-                                <div className="flex flex-col">
-                                    <div className="h-2.5 w-24 bg-gray-200/80 rounded mb-1.5 shadow-sm" />
-                                    <div className="h-2 w-16 bg-gray-200/50 rounded shadow-sm" />
+    
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 border-2 border-white shadow-md" />
+                                    <div className="flex flex-col">
+                                        <div className="h-2.5 w-24 bg-gray-200/80 rounded mb-1.5 shadow-sm" />
+                                        <div className="h-2 w-16 bg-gray-200/50 rounded shadow-sm" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
                 
                 {/* Floating particles behind phone */}
@@ -1178,7 +1524,9 @@ const App = () => {
             <Hero onStart={() => setView('auth')} />
             <SolutionSection />
             <HowItWorks />
+            <FAQ />
             <Footer />
+            <WhatsAppFloat />
           </>
         )}
 
