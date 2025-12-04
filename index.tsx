@@ -33,12 +33,18 @@ import {
   Twitter,
   Instagram,
   Youtube,
+  Facebook,
   MessageCircle,
   Plus,
   Minus,
   Volume2,
   Users,
-  RefreshCw
+  RefreshCw,
+  Share2,
+  Settings,
+  LogOut,
+  Film,
+  Link as LinkIcon
 } from 'lucide-react';
 
 // --- Types & Interfaces ---
@@ -50,6 +56,16 @@ interface Template {
   platform: 'TikTok' | 'Shopee' | 'Instagram' | 'YouTube';
   duration: string;
   thumbnailUrl: string;
+}
+
+interface Project {
+  id: string;
+  templateId: string;
+  templateTitle: string;
+  videoUrl: string;
+  thumbnailUrl: string; // Usually the source image or template thumb
+  createdAt: Date;
+  platform: 'TikTok' | 'Shopee' | 'Instagram' | 'YouTube';
 }
 
 type Language = 'en' | 'id';
@@ -83,8 +99,10 @@ const TRANSLATIONS: Translation = {
   },
   navHome: { en: "Home", id: "Beranda" },
   navTemplates: { en: "Templates", id: "Templat" },
+  navProjects: { en: "My Projects", id: "Proyek Saya" },
   navPricing: { en: "Pricing", id: "Harga" },
   navLogin: { en: "Login", id: "Masuk" },
+  navProfile: { en: "Profile", id: "Profil" },
   navLogout: { en: "Logout", id: "Keluar" },
   featureSmart: { en: "Smart AI", id: "AI Pintar" },
   featureFast: { en: "Fast Generation", id: "Generasi Cepat" },
@@ -139,10 +157,18 @@ const FAQ_DATA = [
 
 // --- Context ---
 
+interface ConnectedAccounts {
+  instagram: boolean;
+  tiktok: boolean;
+  facebook: boolean;
+  youtube: boolean;
+}
+
 interface UserState {
   isLoggedIn: boolean;
   email: string | null;
   plan: UserPlan;
+  connectedAccounts: ConnectedAccounts;
 }
 
 interface AppContextType {
@@ -153,20 +179,31 @@ interface AppContextType {
   login: (email: string) => void;
   logout: () => void;
   upgradePlan: (plan: UserPlan) => void;
+  toggleSocialConnection: (platform: keyof ConnectedAccounts) => void;
   showPricingModal: boolean;
   setShowPricingModal: (show: boolean) => void;
+  projects: Project[];
+  addProject: (p: Project) => void;
 }
 
 const AppContext = createContext<AppContextType>({
   lang: 'en',
   setLang: () => {},
   t: () => '',
-  user: { isLoggedIn: false, email: null, plan: 'free' },
+  user: { 
+    isLoggedIn: false, 
+    email: null, 
+    plan: 'free',
+    connectedAccounts: { instagram: false, tiktok: false, facebook: false, youtube: false } 
+  },
   login: () => {},
   logout: () => {},
   upgradePlan: () => {},
+  toggleSocialConnection: () => {},
   showPricingModal: false,
   setShowPricingModal: () => {},
+  projects: [],
+  addProject: () => {},
 });
 
 const useAppContext = () => useContext(AppContext);
@@ -261,12 +298,24 @@ const WhatsAppFloat = () => {
 const Navbar = ({ onViewChange }: { onViewChange: (view: string) => void }) => {
   const { lang, setLang, t, user, logout } = useAppContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    const handleClickOutside = (event: MouseEvent) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+            setProfileMenuOpen(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+        window.removeEventListener('scroll', handleScroll);
+        document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   return (
@@ -305,17 +354,34 @@ const Navbar = ({ onViewChange }: { onViewChange: (view: string) => void }) => {
              </button>
              
              {user.isLoggedIn ? (
-               <div className="flex items-center gap-3">
-                 <div className="flex flex-col items-end">
-                    <span className="text-xs text-gray-400">Welcome,</span>
-                    <span className="text-sm font-bold text-white">{user.email?.split('@')[0]}</span>
+               <div className="flex items-center gap-3 relative" ref={dropdownRef}>
+                 <div 
+                    className="flex items-center gap-3 cursor-pointer p-1 rounded-full hover:bg-white/5 transition-colors"
+                    onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                 >
+                     <div className="flex flex-col items-end">
+                        <span className="text-xs text-gray-400">Welcome,</span>
+                        <span className="text-sm font-bold text-white">{user.email?.split('@')[0]}</span>
+                     </div>
+                     <div className="w-9 h-9 rounded-full bg-vuca-blue flex items-center justify-center text-white font-bold ring-2 ring-white/10">
+                        {user.email?.[0].toUpperCase()}
+                     </div>
                  </div>
-                 <div className="w-8 h-8 rounded-full bg-vuca-blue flex items-center justify-center text-white font-bold">
-                    {user.email?.[0].toUpperCase()}
-                 </div>
-                 <button onClick={logout} className="ml-2 text-gray-400 hover:text-white transition-colors">
-                    <LogIn className="rotate-180" size={18} />
-                 </button>
+
+                 {profileMenuOpen && (
+                     <div className="absolute top-14 right-0 w-48 bg-[#0E1529] border border-white/10 rounded-xl shadow-2xl py-2 overflow-hidden animate-fade-in-up">
+                        <button onClick={() => { onViewChange('profile'); setProfileMenuOpen(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2">
+                             <User size={16} /> {t('navProfile')}
+                        </button>
+                        <button onClick={() => { onViewChange('dashboard'); setProfileMenuOpen(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2">
+                             <Film size={16} /> {t('navProjects')}
+                        </button>
+                        <div className="border-t border-white/10 my-1"></div>
+                        <button onClick={logout} className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-2">
+                             <LogOut size={16} /> {t('navLogout')}
+                        </button>
+                     </div>
+                 )}
                </div>
              ) : (
                 <>
@@ -344,7 +410,10 @@ const Navbar = ({ onViewChange }: { onViewChange: (view: string) => void }) => {
           <div className="px-4 pt-4 pb-6 space-y-2">
              <button onClick={() => { onViewChange('landing'); setMobileMenuOpen(false); }} className="text-gray-300 hover:text-white block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('navHome')}</button>
              {user.isLoggedIn && (
-               <button onClick={() => { onViewChange('dashboard'); setMobileMenuOpen(false); }} className="text-gray-300 hover:text-white block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('navTemplates')}</button>
+               <>
+                 <button onClick={() => { onViewChange('dashboard'); setMobileMenuOpen(false); }} className="text-gray-300 hover:text-white block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('navTemplates')}</button>
+                 <button onClick={() => { onViewChange('profile'); setMobileMenuOpen(false); }} className="text-gray-300 hover:text-white block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('navProfile')}</button>
+               </>
              )}
              
              <div className="border-t border-white/10 my-4 pt-4">
@@ -362,206 +431,128 @@ const Navbar = ({ onViewChange }: { onViewChange: (view: string) => void }) => {
   );
 };
 
-const SolutionSection = () => {
+const Hero = ({ onStart }: { onStart: () => void }) => {
+  const { t } = useAppContext();
   return (
-    <section className="py-24 bg-[#0A0F1F] relative overflow-hidden">
-        {/* Background Gradients */}
-        <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[40vw] h-[40vw] bg-vuca-blue/5 rounded-full blur-[100px] pointer-events-none"></div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
-            {/* Left Content */}
-            <div className="animate-fade-in-up">
-                 <div className="inline-block px-3 py-1 rounded-full bg-vuca-blue/10 border border-vuca-blue/20 text-vuca-blue text-xs font-bold uppercase tracking-wider mb-6">
-                    Cost Efficiency
-                 </div>
-                 <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-6 leading-tight">
-                    <span className="text-gradient-primary">Vuca AI</span> is the Solution.
-                 </h2>
-                 <p className="text-xl text-gray-300 mb-8 leading-relaxed font-light">
-                    Ready to use UGC templates + AI voiceover + video generator, so you can focus on researching angles & scaling campaigns.
-                 </p>
-                 
-                 <div className="space-y-8">
-                    <div className="flex gap-4 group">
-                        <div className="w-14 h-14 rounded-2xl bg-[#131B2E] border border-white/10 flex items-center justify-center text-white shadow-lg group-hover:border-vuca-blue/50 group-hover:bg-vuca-blue/10 transition-all shrink-0">
-                            <Layout size={28} />
-                        </div>
-                        <div>
-                            <h3 className="text-white font-bold text-lg mb-1 group-hover:text-vuca-blue transition-colors">Ready-to-use Templates</h3>
-                            <p className="text-gray-400 text-sm">Access 10,000+ viral structures. No more starting from scratch.</p>
-                        </div>
-                    </div>
-                    
-                    <div className="flex gap-4 group">
-                        <div className="w-14 h-14 rounded-2xl bg-[#131B2E] border border-white/10 flex items-center justify-center text-white shadow-lg group-hover:border-vuca-yellow/50 group-hover:bg-vuca-yellow/10 transition-all shrink-0">
-                            <Zap size={28} />
-                        </div>
-                        <div>
-                            <h3 className="text-white font-bold text-lg mb-1 group-hover:text-vuca-yellow transition-colors">AI-Powered Production</h3>
-                            <p className="text-gray-400 text-sm">Instant voiceovers, scripting, and editing. 10x your output.</p>
-                        </div>
-                    </div>
-                 </div>
-            </div>
-            
-            {/* Right Visual - Comparison Card */}
-             <div className="relative animate-fade-in-up animation-delay-2000">
-                 <div className="absolute inset-0 bg-gradient-to-br from-vuca-blue/20 to-vuca-purple/20 blur-2xl -z-10 rounded-3xl"></div>
-                 <div className="glass-card rounded-3xl p-8 border border-white/10 relative overflow-hidden">
-                     <div className="absolute top-0 right-0 p-4 opacity-10">
-                         <Shield size={120} />
-                     </div>
-                     
-                     <h3 className="text-white font-bold text-xl mb-8 flex items-center gap-2">
-                        <span className="w-2 h-6 bg-vuca-yellow rounded-full"></span>
-                        Savings Breakdown
-                     </h3>
-                     
-                     {/* Comparison 1: Time */}
-                     <div className="mb-8">
-                         <div className="flex justify-between text-sm mb-3">
-                             <span className="text-gray-400">Time per Video</span>
-                         </div>
-                         <div className="space-y-3">
-                             <div className="relative">
-                                 <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                                     <span>Manual Editing</span>
-                                     <span>3-4 Hours</span>
-                                 </div>
-                                 <div className="h-10 bg-white/5 rounded-lg flex items-center px-3 relative overflow-hidden">
-                                     <div className="absolute inset-y-0 left-0 bg-gray-700 w-full opacity-20"></div>
-                                     <span className="relative z-10 text-gray-400 text-xs font-mono">TRADITIONAL</span>
-                                 </div>
-                             </div>
-                             
-                             <div className="relative">
-                                 <div className="flex items-center justify-between text-xs text-vuca-blue mb-1">
-                                     <span className="font-bold">Vuca AI</span>
-                                     <span className="font-bold">5 Minutes</span>
-                                 </div>
-                                 <div className="h-10 bg-vuca-blue/10 border border-vuca-blue/30 rounded-lg flex items-center px-3 relative overflow-hidden">
-                                      <div className="absolute inset-y-0 left-0 bg-vuca-blue w-[5%] shadow-[0_0_20px_#0047FF]"></div>
-                                     <span className="relative z-10 text-white text-xs font-mono font-bold flex items-center gap-2">
-                                         <Zap size={12} className="text-vuca-yellow fill-current" /> FAST
-                                     </span>
-                                 </div>
-                             </div>
-                         </div>
-                     </div>
-
-                     {/* Comparison 2: Cost */}
-                     <div>
-                         <div className="flex justify-between text-sm mb-3">
-                             <span className="text-gray-400">Cost per Asset</span>
-                         </div>
-                         <div className="grid grid-cols-2 gap-4">
-                             <div className="bg-white/5 rounded-xl p-4 text-center">
-                                 <div className="text-gray-500 text-xs uppercase mb-1">Agency</div>
-                                 <div className="text-2xl font-bold text-gray-400">$150</div>
-                             </div>
-                             <div className="bg-gradient-to-br from-vuca-blue/20 to-vuca-blue/10 border border-vuca-blue/30 rounded-xl p-4 text-center relative overflow-hidden">
-                                 <div className="absolute top-0 right-0 w-8 h-8 bg-vuca-yellow blur-lg opacity-40"></div>
-                                 <div className="text-vuca-blue text-xs uppercase mb-1 font-bold">Vuca AI</div>
-                                 <div className="text-2xl font-bold text-white">$0.20</div>
-                             </div>
-                         </div>
-                     </div>
-
-                 </div>
-                 
-                 {/* Floating Badge */}
-                 <div className="absolute -bottom-6 -right-6 bg-[#0E1529] border border-white/10 p-4 rounded-2xl shadow-xl flex items-center gap-3 animate-float">
-                     <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
-                         <div className="font-bold text-xs">+90%</div>
-                     </div>
-                     <div>
-                         <div className="text-gray-400 text-xs">Margin Increase</div>
-                         <div className="text-white font-bold text-sm">Guaranteed</div>
-                     </div>
-                 </div>
-             </div>
+    <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-hidden">
+      <AmbientBackground mode="hero" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-8 animate-fade-in-up">
+           <span className="flex h-2 w-2 rounded-full bg-green-400 animate-pulse"></span>
+           <span className="text-xs font-medium text-gray-300">Vuca AI Beta is Live</span>
+        </div>
+        
+        <h1 className="text-5xl md:text-7xl font-heading font-bold text-white tracking-tight mb-8 animate-fade-in-up animation-delay-200">
+          {t('heroTitle').split('.')[0]}.
+          <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-vuca-blue via-blue-400 to-vuca-purple animate-gradient-x">
+            {t('heroTitle').split('.')[1]}
+          </span>
+        </h1>
+        
+        <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-400 mb-10 animate-fade-in-up animation-delay-400">
+          {t('heroSubtitle')}
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animation-delay-600">
+          <button 
+            onClick={onStart}
+            className="group relative px-8 py-4 bg-vuca-blue rounded-full font-bold text-white shadow-[0_0_40px_rgba(0,71,255,0.4)] hover:shadow-[0_0_60px_rgba(0,71,255,0.6)] transition-all hover:-translate-y-1 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 translate-x-[-200%] group-hover:animate-shine" />
+            <span className="relative flex items-center gap-2 text-lg">
+              {t('ctaStart')} <Zap size={20} fill="currentColor" />
+            </span>
+          </button>
+          
+          <button className="px-8 py-4 bg-white/5 border border-white/10 rounded-full font-bold text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+            {t('ctaWaitlist')} <ArrowRight size={20} />
+          </button>
         </div>
       </div>
-    </section>
+    </div>
   );
-}
+};
 
-const FAQ = () => {
-    const [activeIndex, setActiveIndex] = useState<number | null>(null);
-
+const SolutionSection = () => {
+    const { t } = useAppContext();
     return (
-        <section className="py-24 bg-[#080C19] relative">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-4">Frequently Asked Questions</h2>
-                    <p className="text-gray-400">Everything you need to know about Vuca AI.</p>
-                </div>
-                
-                <div className="space-y-4">
-                    {FAQ_DATA.map((item, index) => (
-                        <div key={index} className="border border-white/10 rounded-2xl bg-white/5 overflow-hidden transition-all">
-                            <button 
-                                onClick={() => setActiveIndex(activeIndex === index ? null : index)}
-                                className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
-                            >
-                                <span className="text-lg font-bold text-white">{item.q}</span>
-                                {activeIndex === index ? <Minus size={20} className="text-vuca-blue" /> : <Plus size={20} className="text-gray-400" />}
-                            </button>
-                            <div className={`overflow-hidden transition-all duration-300 ${activeIndex === index ? 'max-h-48' : 'max-h-0'}`}>
-                                <div className="p-6 pt-0 text-gray-400 leading-relaxed border-t border-white/5 mt-2">
-                                    {item.a}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+        <section className="py-20 bg-black/20">
+            <div className="max-w-7xl mx-auto px-4 text-center">
+                 <div className="grid md:grid-cols-3 gap-8">
+                     <div className="p-8 rounded-3xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                         <div className="w-12 h-12 bg-vuca-blue/20 rounded-xl flex items-center justify-center text-vuca-blue mb-4 mx-auto"><Sparkles /></div>
+                         <h3 className="text-xl font-bold text-white mb-2">{t('featureSmart')}</h3>
+                         <p className="text-gray-400">Advanced algorithms understand your product.</p>
+                     </div>
+                     <div className="p-8 rounded-3xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                         <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center text-purple-400 mb-4 mx-auto"><Zap /></div>
+                         <h3 className="text-xl font-bold text-white mb-2">{t('featureFast')}</h3>
+                         <p className="text-gray-400">Generate videos in under 60 seconds.</p>
+                     </div>
+                      <div className="p-8 rounded-3xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                         <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center text-green-400 mb-4 mx-auto"><Globe /></div>
+                         <h3 className="text-xl font-bold text-white mb-2">Multi-Language</h3>
+                         <p className="text-gray-400">Support for English and Bahasa Indonesia.</p>
+                     </div>
+                 </div>
             </div>
         </section>
-    );
-};
+    )
+}
 
 const HowItWorks = () => {
     const { t } = useAppContext();
     return (
-        <section className="py-24 relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <section className="py-24 relative">
+             <div className="max-w-7xl mx-auto px-4">
                 <div className="text-center mb-16">
-                    <span className="text-vuca-blue font-bold tracking-wider text-sm uppercase mb-2 block">Workflow</span>
-                    <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-4">{t('howItWorksTitle')}</h2>
-                    <p className="text-gray-400 max-w-2xl mx-auto">{t('howItWorksSubtitle')}</p>
+                    <h2 className="text-3xl font-heading font-bold text-white">{t('howItWorksTitle')}</h2>
+                    <p className="text-gray-400">{t('howItWorksSubtitle')}</p>
                 </div>
+                <div className="grid md:grid-cols-3 gap-12">
+                     <div className="relative">
+                         <div className="text-8xl font-bold text-white/5 absolute -top-10 -left-4">1</div>
+                         <h3 className="text-xl font-bold text-white mb-2 relative z-10">Choose Template</h3>
+                         <p className="text-gray-400 relative z-10">Select from our library of high-converting viral templates.</p>
+                     </div>
+                     <div className="relative">
+                         <div className="text-8xl font-bold text-white/5 absolute -top-10 -left-4">2</div>
+                         <h3 className="text-xl font-bold text-white mb-2 relative z-10">Input Product</h3>
+                         <p className="text-gray-400 relative z-10">Paste your product URL or description. AI generates the script.</p>
+                     </div>
+                     <div className="relative">
+                         <div className="text-8xl font-bold text-white/5 absolute -top-10 -left-4">3</div>
+                         <h3 className="text-xl font-bold text-white mb-2 relative z-10">Export Video</h3>
+                         <p className="text-gray-400 relative z-10">Get your video with voiceover and captions ready to post.</p>
+                     </div>
+                </div>
+             </div>
+        </section>
+    );
+}
 
-                <div className="grid md:grid-cols-3 gap-12 relative">
-                    <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-[2px] bg-gradient-to-r from-transparent via-vuca-blue/30 to-transparent -z-10"></div>
-
-                    {[
-                        { 
-                            icon: <MousePointerClick size={32} className="text-white" />, 
-                            title: "1. Select Template", 
-                            desc: "Choose from 10,000+ viral templates optimized for TikTok, Shopee, and Instagram." 
-                        },
-                        { 
-                            icon: <Wand2 size={32} className="text-white" />, 
-                            title: "2. Generate AI Script", 
-                            desc: "Input your product URL. Our AI writes high-converting Hook-Value-CTA scripts in seconds." 
-                        },
-                        { 
-                            icon: <Download size={32} className="text-white" />, 
-                            title: "3. Export & Post", 
-                            desc: "Get your finished video ready to post. Scale your affiliate revenue effortlessly." 
-                        }
-                    ].map((step, idx) => (
-                        <div key={idx} className="flex flex-col items-center text-center group">
-                            <div className="w-24 h-24 rounded-3xl bg-[#131B2E] border border-white/10 flex items-center justify-center mb-6 shadow-xl shadow-black/20 group-hover:border-vuca-blue/50 group-hover:scale-110 transition-all duration-300 relative">
-                                <div className="absolute inset-0 bg-vuca-blue/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                {step.icon}
-                                <div className="absolute -bottom-3 bg-[#0A0F1F] text-vuca-blue font-bold text-xs px-3 py-1 rounded-full border border-vuca-blue/30">
-                                    STEP 0{idx + 1}
+const FAQ = () => {
+    const [openIndex, setOpenIndex] = useState<number | null>(null);
+    return (
+        <section className="py-20 bg-black/20">
+            <div className="max-w-3xl mx-auto px-4">
+                <h2 className="text-3xl font-heading font-bold text-white text-center mb-12">FAQ</h2>
+                <div className="space-y-4">
+                    {FAQ_DATA.map((item, i) => (
+                        <div key={i} className="border border-white/10 rounded-2xl bg-[#0E1529] overflow-hidden">
+                            <button 
+                                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                                className="w-full text-left px-6 py-4 flex items-center justify-between font-bold text-white"
+                            >
+                                {item.q}
+                                {openIndex === i ? <Minus size={16} /> : <Plus size={16} />}
+                            </button>
+                            {openIndex === i && (
+                                <div className="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                                    {item.a}
                                 </div>
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
-                            <p className="text-gray-400 text-sm leading-relaxed max-w-xs">{step.desc}</p>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -571,292 +562,142 @@ const HowItWorks = () => {
 }
 
 const Footer = () => {
-  return (
-    <footer className="bg-[#0A0F1F] border-t border-white/5 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-4 gap-8 mb-12">
-                <div className="col-span-1 md:col-span-2">
-                    <span className="font-heading font-bold text-2xl text-white block mb-4">VUCA<span className="text-vuca-blue">.AI</span></span>
-                    <p className="text-gray-400 max-w-xs mb-6">Automate Your Content. Scale Your Revenue. The #1 AI UGC Video Generator for Affiliates.</p>
-                    <div className="flex gap-4">
-                        {[<Twitter size={20}/>, <Instagram size={20}/>, <Youtube size={20}/>].map((icon, i) => (
-                            <div key={i} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 cursor-pointer transition-all">
-                                {icon}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                
-                <div>
-                    <h4 className="text-white font-bold mb-4">Product</h4>
-                    <ul className="space-y-2 text-gray-400 text-sm">
-                        <li className="hover:text-vuca-blue cursor-pointer">Templates</li>
-                        <li className="hover:text-vuca-blue cursor-pointer">Pricing</li>
-                        <li className="hover:text-vuca-blue cursor-pointer">Showcase</li>
-                        <li className="hover:text-vuca-blue cursor-pointer">Roadmap</li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 className="text-white font-bold mb-4">Company</h4>
-                    <ul className="space-y-2 text-gray-400 text-sm">
-                        <li className="hover:text-vuca-blue cursor-pointer">About Us</li>
-                        <li className="hover:text-vuca-blue cursor-pointer">Contact</li>
-                        <li className="hover:text-vuca-blue cursor-pointer">Privacy Policy</li>
-                        <li className="hover:text-vuca-blue cursor-pointer">Terms of Service</li>
-                    </ul>
-                </div>
+    return (
+        <footer className="border-t border-white/10 py-12 bg-[#050810]">
+            <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+                 <div className="text-2xl font-heading font-bold text-white">VUCA<span className="text-vuca-blue">.AI</span></div>
+                 <div className="text-gray-500 text-sm">© 2024 Vuca AI. All rights reserved.</div>
+                 <div className="flex gap-4">
+                     <Twitter className="text-gray-400 hover:text-white cursor-pointer" size={20} />
+                     <Instagram className="text-gray-400 hover:text-white cursor-pointer" size={20} />
+                     <Youtube className="text-gray-400 hover:text-white cursor-pointer" size={20} />
+                 </div>
             </div>
-            <div className="border-t border-white/5 pt-8 text-center text-gray-500 text-sm">
-                © 2025 Vuca AI. All rights reserved.
-            </div>
-        </div>
-    </footer>
-  );
+        </footer>
+    );
 }
 
-const Hero = ({ onStart }: { onStart: () => void }) => {
-  const { t } = useAppContext();
-  
-  return (
-    <div className="relative pt-32 pb-16 md:pt-48 md:pb-32 overflow-hidden min-h-screen flex flex-col items-center">
-      <AmbientBackground mode="hero" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center w-full">
-        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 md:mb-10 animate-fade-in-up hover:bg-white/10 transition-colors cursor-default backdrop-blur-sm shadow-lg shadow-black/20">
-           <span className="flex h-2.5 w-2.5 rounded-full bg-vuca-yellow shadow-[0_0_15px_#FFD33C] animate-pulse"></span>
-           <span className="text-[10px] md:text-sm text-gray-300 font-medium tracking-wide">V 1.0 • 2025 RELEASE</span>
-        </div>
-        
-        <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-white leading-[1.1] mb-6 md:mb-8 max-w-5xl mx-auto drop-shadow-2xl tracking-tight">
-           <span className="text-gradient-primary block mb-2 md:mb-4">{t('heroTitle').split('.')[0]}.</span>
-           <span className="text-white relative inline-block">
-             {t('heroTitle').split('.')[1]}
-             <svg className="absolute -bottom-1 md:-bottom-2 left-0 w-full h-2 md:h-3 text-vuca-blue opacity-80" viewBox="0 0 100 10" preserveAspectRatio="none">
-               <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" />
-             </svg>
-           </span>
-        </h1>
-        
-        <p className="text-base sm:text-lg md:text-2xl text-gray-400 mb-10 md:mb-12 max-w-3xl mx-auto font-light leading-relaxed animate-fade-in-up animation-delay-2000 px-4">
-          {t('heroSubtitle')}
-        </p>
-        
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 animate-fade-in-up animation-delay-4000 px-4 w-full sm:w-auto">
-          <button 
-            onClick={onStart}
-            className="group relative w-full sm:w-auto px-8 md:px-12 py-4 md:py-5 bg-vuca-yellow text-vuca-navy font-bold text-lg rounded-2xl overflow-hidden transition-all transform hover:scale-105 shadow-[0_0_40px_rgba(255,211,60,0.3)] hover:shadow-[0_0_60px_rgba(255,211,60,0.5)]"
-          >
-            <div className="absolute inset-0 bg-white/30 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-            <span className="relative flex items-center justify-center gap-3">
-              {t('ctaStart')} <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
-            </span>
-          </button>
-          
-          <button className="group w-full sm:w-auto px-8 md:px-12 py-4 md:py-5 bg-white/5 text-white font-medium text-lg rounded-2xl hover:bg-white/10 border border-white/10 transition-all flex items-center justify-center gap-3 backdrop-blur-sm">
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-vuca-blue group-hover:text-white transition-colors">
-              <Play size={14} fill="currentColor" /> 
-            </div>
-            Demo Video
-          </button>
-        </div>
-
-        {/* Brand Proof / References */}
-        <div className="mt-20 md:mt-28 pt-10 border-t border-white/5 relative w-full">
-           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0A0F1F] px-6 text-[10px] md:text-xs text-gray-500 uppercase tracking-[0.2em] font-bold whitespace-nowrap">
-              Trusted by 10,000+ Creators
-           </div>
-           <div className="flex flex-wrap justify-center items-center gap-6 md:gap-16 opacity-30 grayscale hover:grayscale-0 transition-all duration-700 px-4">
-              {['Shopee', 'TikTok', 'Tokopedia', 'Instagram', 'YouTube'].map((brand) => (
-                <span key={brand} className="text-xl md:text-3xl font-heading font-bold text-white hover:text-vuca-blue transition-colors cursor-default select-none">{brand}</span>
-              ))}
-           </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- Auth Component ---
 const AuthPage = () => {
-  const { login } = useAppContext();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoginView, setIsLoginView] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) return;
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      login(email);
-      setIsLoading(false);
-    }, 1500);
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center relative py-20 px-4">
-      <AmbientBackground mode="subtle" />
-      
-      <div className="w-full max-w-4xl grid md:grid-cols-2 bg-[#0E1529]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-        {/* Left Side - Visual */}
-        <div className="hidden md:flex flex-col justify-center p-12 relative bg-gradient-to-br from-vuca-blue/20 to-vuca-navy border-r border-white/5">
-           <div className="absolute top-10 left-10">
-             <span className="font-heading font-bold text-2xl text-white">VUCA<span className="text-vuca-blue">.AI</span></span>
-           </div>
-           
-           <h2 className="text-3xl font-heading font-bold text-white mb-6">Start Creating Viral Content Today.</h2>
-           <ul className="space-y-4">
-              {['Access 10,000+ Templates', 'AI Script Generator', 'High Quality Export', 'Trend Analysis'].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-gray-300">
-                   <div className="bg-vuca-blue/20 p-1 rounded-full text-vuca-blue"><Check size={14} /></div>
-                   {item}
-                </li>
-              ))}
-           </ul>
-        </div>
-
-        {/* Right Side - Form */}
-        <div className="p-8 md:p-12 flex flex-col justify-center">
-           <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{isLoginView ? 'Welcome Back' : 'Create Account'}</h2>
-           <p className="text-gray-400 mb-8">{isLoginView ? 'Enter your details to access your dashboard.' : 'Join thousands of creators scaling their revenue.'}</p>
-
-           <form onSubmit={handleSubmit} className="space-y-5">
-              {!isLoginView && (
-                 <div>
-                    <label className="block text-xs font-bold text-gray-300 uppercase mb-2">Full Name</label>
-                    <div className="relative">
-                       <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                       <input type="text" className="w-full bg-[#0A0F1F] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:border-vuca-blue focus:outline-none transition-colors" placeholder="John Doe" />
-                    </div>
-                 </div>
-              )}
-              
-              <div>
-                 <label className="block text-xs font-bold text-gray-300 uppercase mb-2">Email Address</label>
-                 <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                    <input 
-                      type="email" 
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-[#0A0F1F] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:border-vuca-blue focus:outline-none transition-colors" 
-                      placeholder="john@example.com" 
-                    />
-                 </div>
-              </div>
-
-              <div>
-                 <label className="block text-xs font-bold text-gray-300 uppercase mb-2">Password</label>
-                 <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                    <input 
-                      type="password" 
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-[#0A0F1F] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:border-vuca-blue focus:outline-none transition-colors" 
-                      placeholder="••••••••" 
-                    />
-                 </div>
-              </div>
-
-              <button 
-                type="submit" 
-                disabled={isLoading}
-                className="w-full bg-vuca-blue text-white font-bold py-4 rounded-xl hover:bg-blue-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/30"
-              >
-                {isLoading ? <Loader2 className="animate-spin" /> : (isLoginView ? 'Login' : 'Create Account')}
-              </button>
-           </form>
-
-           <div className="mt-6 text-center">
-              <p className="text-gray-500 text-sm">
-                {isLoginView ? "Don't have an account? " : "Already have an account? "}
-                <button onClick={() => setIsLoginView(!isLoginView)} className="text-vuca-yellow hover:underline font-bold">
-                   {isLoginView ? 'Sign Up' : 'Login'}
-                </button>
-              </p>
-           </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const PricingModal = ({ onClose, onUpgrade }: { onClose: () => void, onUpgrade: (plan: UserPlan) => void }) => {
-    const { t } = useAppContext();
+    const { login, t } = useAppContext();
+    const [email, setEmail] = useState('');
     
-    return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
-            <div className="relative w-full max-w-5xl bg-[#0E1529] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl animate-fade-in-up max-h-[90vh] overflow-y-auto scrollbar-hide">
-                <button onClick={onClose} className="absolute top-6 right-6 text-gray-400 hover:text-white z-10 p-2 bg-white/5 rounded-full">
-                    <X size={24} />
-                </button>
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if(email) login(email);
+    };
 
-                <div className="p-8 md:p-12 relative overflow-hidden">
-                    <AmbientBackground mode="pricing" />
-                    <div className="text-center mb-10 relative z-10">
-                        <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-4 drop-shadow-xl">{t('pricingTitle')}</h2>
-                        <p className="text-gray-400 max-w-xl mx-auto">{t('pricingSubtitle')}</p>
+    return (
+        <div className="min-h-screen pt-20 flex items-center justify-center px-4 relative">
+             <AmbientBackground mode="subtle" />
+             <div className="w-full max-w-md bg-[#0E1529] border border-white/10 p-8 rounded-3xl shadow-2xl animate-fade-in-up">
+                 <h2 className="text-2xl font-bold text-white mb-6 text-center">{t('navLogin')}</h2>
+                 <form onSubmit={handleSubmit} className="space-y-4">
+                     <div>
+                         <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Email Address</label>
+                         <input 
+                            type="email" 
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-vuca-blue"
+                            placeholder="you@example.com"
+                            required
+                         />
+                     </div>
+                     <button type="submit" className="w-full bg-vuca-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors">
+                         Continue with Email
+                     </button>
+                 </form>
+                 <div className="mt-6 text-center text-xs text-gray-500">
+                     By continuing, you agree to our Terms of Service.
+                 </div>
+             </div>
+        </div>
+    );
+}
+
+const ProfilePage = () => {
+    const { user, toggleSocialConnection } = useAppContext();
+    const socialPlatforms = [
+        { id: 'instagram', name: 'Instagram', icon: <Instagram size={20} />, color: 'bg-gradient-to-tr from-yellow-400 to-purple-600' },
+        { id: 'tiktok', name: 'TikTok', icon: <div className="w-5 h-5 bg-black text-white flex items-center justify-center rounded text-[10px] font-bold border border-gray-700">TT</div>, color: 'bg-black' },
+        { id: 'facebook', name: 'Facebook', icon: <Facebook size={20} />, color: 'bg-blue-600' },
+        { id: 'youtube', name: 'YouTube', icon: <Youtube size={20} />, color: 'bg-red-600' }
+    ];
+
+    return (
+        <div className="min-h-screen pt-28 pb-12 px-4 sm:px-6 lg:px-8">
+            <AmbientBackground mode="subtle" />
+            <div className="max-w-4xl mx-auto">
+                <h1 className="text-3xl font-heading font-bold text-white mb-2">My Profile</h1>
+                <p className="text-gray-400 mb-10">Manage your account and connected platforms.</p>
+
+                <div className="grid md:grid-cols-3 gap-8">
+                    {/* User Info Card */}
+                    <div className="md:col-span-1 space-y-6">
+                        <div className="glass-card p-6 rounded-3xl text-center">
+                            <div className="w-24 h-24 mx-auto bg-vuca-blue rounded-full flex items-center justify-center text-4xl font-bold text-white mb-4 ring-4 ring-white/10">
+                                {user.email?.[0].toUpperCase()}
+                            </div>
+                            <h2 className="text-xl font-bold text-white mb-1">{user.email?.split('@')[0]}</h2>
+                            <p className="text-gray-400 text-sm mb-6">{user.email}</p>
+                            
+                            <div className="bg-white/5 rounded-xl p-4 text-left">
+                                <div className="text-xs text-gray-500 uppercase mb-1">Current Plan</div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-vuca-yellow font-bold uppercase">{user.plan}</span>
+                                    {user.plan === 'free' && <button className="text-xs bg-vuca-blue px-2 py-1 rounded text-white">Upgrade</button>}
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-6 relative z-10">
-                        {/* Starter Plan */}
-                        <div className="glass-card p-6 rounded-3xl flex flex-col border-white/5 hover:border-white/20 transition-all">
-                            <h3 className="text-xl font-bold text-white mb-2">Starter</h3>
-                            <div className="flex items-baseline gap-1 mb-6">
-                                <span className="text-4xl font-heading font-bold text-white">$10</span>
-                                <span className="text-gray-400">/mo</span>
+                    {/* Settings & Connections */}
+                    <div className="md:col-span-2 space-y-8">
+                        {/* Connected Accounts */}
+                        <div className="glass-card p-8 rounded-3xl">
+                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                <Share2 size={20} className="text-vuca-blue" /> Connected Accounts
+                            </h3>
+                            <p className="text-sm text-gray-400 mb-6">
+                                Connect your social profiles to share videos directly from your dashboard.
+                            </p>
+                            
+                            <div className="space-y-4">
+                                {socialPlatforms.map(platform => {
+                                    const isConnected = user.connectedAccounts[platform.id as keyof ConnectedAccounts];
+                                    return (
+                                        <div key={platform.id} className="flex items-center justify-between p-4 bg-[#0E1529] border border-white/5 rounded-2xl">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg ${platform.color}`}>
+                                                    {platform.icon}
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold text-white">{platform.name}</div>
+                                                    <div className="text-xs text-gray-500">{isConnected ? 'Connected' : 'Not connected'}</div>
+                                                </div>
+                                            </div>
+                                            <button 
+                                                onClick={() => toggleSocialConnection(platform.id as keyof ConnectedAccounts)}
+                                                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                                                    isConnected 
+                                                    ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' 
+                                                    : 'bg-white/10 text-white hover:bg-white/20'
+                                                }`}
+                                            >
+                                                {isConnected ? 'Disconnect' : 'Connect'}
+                                            </button>
+                                        </div>
+                                    );
+                                })}
                             </div>
-                            <div className="space-y-3 mb-8 flex-1">
-                                {['15 AI Videos / month', 'Standard Templates', '720p Quality'].map((f) => (
-                                    <div key={f} className="flex items-center gap-3 text-gray-400 text-sm"><Check size={14} />{f}</div>
-                                ))}
-                            </div>
-                            <button onClick={() => onUpgrade('starter')} className="w-full py-3 rounded-xl border border-white/20 text-white font-bold hover:bg-white/5 transition-colors">
-                                Select Starter
-                            </button>
                         </div>
-
-                        {/* Creator Plan */}
-                        <div className="relative p-6 rounded-3xl flex flex-col bg-gradient-to-b from-[#1a233b] to-[#0A0F1F] border border-vuca-blue/50 shadow-2xl shadow-vuca-blue/20 transform md:-translate-y-4">
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-vuca-blue text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">POPULAR</div>
-                            <div className="flex items-center gap-2 mb-2">
-                                <h3 className="text-xl font-bold text-white">Creator</h3>
-                                <Sparkles size={16} className="text-vuca-yellow" />
-                            </div>
-                            <div className="flex items-baseline gap-1 mb-6">
-                                <span className="text-5xl font-heading font-bold text-white">$29</span>
-                                <span className="text-gray-400">/mo</span>
-                            </div>
-                            <div className="space-y-3 mb-8 flex-1">
-                                {['50 AI Videos / month', 'Premium Templates', '1080p HD', 'No Watermark'].map((f) => (
-                                    <div key={f} className="flex items-center gap-3 text-white text-sm font-medium"><Check size={14} className="text-vuca-blue" />{f}</div>
-                                ))}
-                            </div>
-                            <button onClick={() => onUpgrade('creator')} className="w-full py-4 rounded-xl bg-vuca-blue text-white font-bold hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/50">
-                                Get Creator Plan
-                            </button>
-                        </div>
-
-                        {/* Pro Plan */}
-                        <div className="glass-card p-6 rounded-3xl flex flex-col border-white/5 hover:border-white/20 transition-all">
-                            <h3 className="text-xl font-bold text-white mb-2">Pro</h3>
-                            <div className="flex items-baseline gap-1 mb-6">
-                                <span className="text-4xl font-heading font-bold text-white">$99</span>
-                                <span className="text-gray-400">/mo</span>
-                            </div>
-                            <div className="space-y-3 mb-8 flex-1">
-                                {['Unlimited Videos', 'API Access', '4K Quality', 'Priority Support'].map((f) => (
-                                    <div key={f} className="flex items-center gap-3 text-gray-400 text-sm"><Check size={14} />{f}</div>
-                                ))}
-                            </div>
-                            <button onClick={() => onUpgrade('pro')} className="w-full py-3 rounded-xl border border-white/20 text-white font-bold hover:bg-white/5 transition-colors">
-                                Select Pro
-                            </button>
+                        
+                        {/* API Key Placeholder */}
+                        <div className="glass-card p-8 rounded-3xl opacity-60">
+                            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                <Lock size={20} className="text-gray-400" /> API Settings
+                            </h3>
+                            <p className="text-sm text-gray-500">API Access is available on the Pro plan.</p>
                         </div>
                     </div>
                 </div>
@@ -865,35 +706,106 @@ const PricingModal = ({ onClose, onUpgrade }: { onClose: () => void, onUpgrade: 
     );
 };
 
-const TemplateCard: React.FC<{ template: Template; onSelect: (t: Template) => void }> = ({ template, onSelect }) => {
+const TemplateCard = ({ template, onSelect }: { template: Template; onSelect: (t: Template) => void }) => {
     return (
-        <div 
-            onClick={() => onSelect(template)}
-            className="gradient-border-card rounded-xl overflow-hidden cursor-pointer group"
-        >
+        <div onClick={() => onSelect(template)} className="group cursor-pointer">
+            <div className="relative aspect-[9/16] rounded-2xl overflow-hidden mb-3 border border-white/5 group-hover:border-vuca-blue/50 transition-all shadow-lg group-hover:shadow-blue-900/20">
+                <img src={template.thumbnailUrl} alt={template.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                
+                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] font-bold text-white flex items-center gap-1">
+                    <Play size={10} fill="currentColor" /> {template.duration}
+                </div>
+                
+                <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                     <span className="text-[10px] font-bold text-vuca-blue bg-vuca-blue/10 px-2 py-0.5 rounded-full mb-2 inline-block border border-vuca-blue/20">
+                        {template.category}
+                     </span>
+                     <div className="flex items-center gap-2 text-white/90 text-xs">
+                        {template.platform === 'TikTok' && <div className="w-4 h-4 rounded-full bg-black flex items-center justify-center font-bold text-[8px] text-white border border-gray-700">TT</div>}
+                        {template.platform === 'Instagram' && <Instagram size={14} />}
+                        {template.platform === 'YouTube' && <Youtube size={14} />}
+                        {template.platform}
+                     </div>
+                </div>
+                
+                {/* Overlay Play Button */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/30 transform scale-50 group-hover:scale-100 transition-transform duration-300">
+                        <Play size={20} fill="currentColor" className="ml-1" />
+                    </div>
+                </div>
+            </div>
+            <h3 className="text-white font-bold text-sm leading-tight group-hover:text-vuca-blue transition-colors">{template.title}</h3>
+        </div>
+    );
+};
+
+const PricingModal = ({ onClose, onUpgrade }: { onClose: () => void; onUpgrade: (plan: UserPlan) => void }) => {
+    const { t } = useAppContext();
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
+             <div className="relative w-full max-w-5xl bg-[#0E1529] border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:h-auto">
+                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white z-20"><X size={24} /></button>
+                 
+                 <div className="p-8 md:p-12 w-full md:w-1/3 bg-gradient-to-br from-vuca-blue/20 to-purple-900/20 relative overflow-hidden">
+                     <div className="relative z-10">
+                         <h2 className="text-3xl font-heading font-bold text-white mb-4">{t('pricingTitle')}</h2>
+                         <p className="text-gray-300 mb-8">{t('pricingSubtitle')}</p>
+                         <ul className="space-y-4">
+                             <li className="flex items-center gap-3 text-white"><CheckCircle className="text-vuca-blue" size={20} /> <span>Unlimited AI Scripts</span></li>
+                             <li className="flex items-center gap-3 text-white"><CheckCircle className="text-vuca-blue" size={20} /> <span>Watermark Removal</span></li>
+                             <li className="flex items-center gap-3 text-white"><CheckCircle className="text-vuca-blue" size={20} /> <span>4K Export Quality</span></li>
+                             <li className="flex items-center gap-3 text-white"><CheckCircle className="text-vuca-blue" size={20} /> <span>Priority Support</span></li>
+                         </ul>
+                     </div>
+                 </div>
+                 
+                 <div className="p-8 md:p-12 w-full md:w-2/3 overflow-y-auto">
+                     <div className="grid md:grid-cols-2 gap-6">
+                         {/* Starter Plan */}
+                         <div className="border border-white/10 rounded-2xl p-6 hover:border-vuca-blue/50 transition-all cursor-pointer group" onClick={() => onUpgrade('starter')}>
+                             <div className="text-xl font-bold text-white mb-2">Starter</div>
+                             <div className="text-3xl font-bold text-white mb-4">$10<span className="text-sm text-gray-400 font-normal">/mo</span></div>
+                             <button className="w-full py-3 rounded-xl border border-white/20 text-white font-bold group-hover:bg-white/5 transition-colors">Choose Starter</button>
+                         </div>
+                         
+                         {/* Pro Plan */}
+                         <div className="border-2 border-vuca-blue rounded-2xl p-6 relative bg-vuca-blue/5 cursor-pointer transform hover:scale-105 transition-all" onClick={() => onUpgrade('creator')}>
+                             <div className="absolute top-0 right-0 bg-vuca-blue text-white text-xs font-bold px-3 py-1 rounded-bl-xl">POPULAR</div>
+                             <div className="text-xl font-bold text-white mb-2">Creator</div>
+                             <div className="text-3xl font-bold text-white mb-4">$29<span className="text-sm text-gray-400 font-normal">/mo</span></div>
+                             <button className="w-full py-3 rounded-xl bg-vuca-blue text-white font-bold shadow-lg shadow-blue-900/50">Choose Creator</button>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+        </div>
+    );
+};
+
+const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
+    return (
+        <div className="gradient-border-card rounded-xl overflow-hidden group">
             <div className="aspect-[9/16] relative bg-gray-800 rounded-xl overflow-hidden">
-                <img src={template.thumbnailUrl} alt={template.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+                <img src={project.thumbnailUrl} alt={project.templateTitle} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80" />
                 
-                <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-full text-xs font-mono text-white flex items-center gap-1.5 shadow-lg">
-                    <Video size={10} /> {template.duration}
-                </div>
-                
-                <div className="absolute top-3 left-3 flex flex-col gap-1">
-                    {template.platform === 'TikTok' && <span className="text-[10px] font-bold bg-black text-white px-2 py-0.5 rounded border border-gray-700 shadow-lg">TikTok</span>}
-                    {template.platform === 'Shopee' && <span className="text-[10px] font-bold bg-[#EE4D2D] text-white px-2 py-0.5 rounded shadow-lg">Shopee</span>}
-                    {template.platform === 'Instagram' && <span className="text-[10px] font-bold bg-gradient-to-tr from-yellow-400 to-purple-600 text-white px-2 py-0.5 rounded shadow-lg">IG</span>}
+                <div className="absolute top-3 right-3 bg-green-500/80 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-white shadow-lg">
+                    READY
                 </div>
 
-                <div className="absolute bottom-0 left-0 w-full p-5">
-                    <span className="text-[10px] text-vuca-yellow font-bold mb-1.5 block uppercase tracking-wider">{template.category}</span>
-                    <h3 className="text-white font-heading font-semibold text-lg leading-tight group-hover:text-vuca-blue transition-colors">{template.title}</h3>
-                </div>
-                
-                {/* Hover Action */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30 backdrop-blur-[2px]">
-                    <div className="bg-vuca-blue text-white rounded-full p-4 transform translate-y-8 group-hover:translate-y-0 transition-all duration-300 shadow-xl shadow-blue-600/40">
-                        <Zap fill="currentColor" size={24} />
+                <div className="absolute bottom-0 left-0 w-full p-4">
+                    <span className="text-[10px] text-gray-400 mb-1 block">{project.createdAt.toLocaleDateString()}</span>
+                    <h3 className="text-white font-heading font-semibold text-sm leading-tight mb-3">{project.templateTitle}</h3>
+                    
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
+                        <button className="flex-1 bg-white/10 hover:bg-white/20 text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 backdrop-blur-sm">
+                            <Download size={12} /> Save
+                        </button>
+                        <button className="flex-1 bg-vuca-blue hover:bg-blue-600 text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow-lg shadow-blue-900/50">
+                            <Share2 size={12} /> Share
+                        </button>
                     </div>
                 </div>
             </div>
@@ -902,7 +814,7 @@ const TemplateCard: React.FC<{ template: Template; onSelect: (t: Template) => vo
 };
 
 const Editor = ({ template, onBack }: { template: Template; onBack: () => void }) => {
-    const { t, user, setShowPricingModal, lang } = useAppContext();
+    const { t, user, setShowPricingModal, lang, addProject } = useAppContext();
     const [prompt, setPrompt] = useState('');
     const [script, setScript] = useState('');
     const [loading, setLoading] = useState(false);
@@ -925,31 +837,32 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
 
     // Final Video
     const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // ... (handleGenerateScript, handleGenerateImage, handleGenerateAudio, handleFileUpload remain same)
+    
     const handleGenerateScript = async () => {
         if (!prompt) return;
         setLoading(true);
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview', // Changed to gemini-3-pro-preview as requested
+                model: 'gemini-3-pro-preview',
                 contents: `Write a short, engaging video script (under 60 seconds) for a ${template.platform} video about: "${prompt}". 
                 The category is ${template.category}.
                 Tone: Friendly, Simple, Confident.
                 Structure: Hook, Value, Call to Action.
                 Language: ${lang === 'id' ? 'Bahasa Indonesia' : 'English'}.
                 Format the output simply as the spoken script text.`,
-                config: {
-                    systemInstruction: "You are an expert viral content scripter.",
-                }
+                config: { systemInstruction: "You are an expert viral content scripter." }
             });
             
             const generatedText = response.text;
             if (generatedText) {
                 setScript(generatedText);
-                setStep(2); // Move to next step
+                setStep(2);
             } else {
                  alert("AI generated empty response. Please try again.");
             }
@@ -966,18 +879,12 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
         setIsGeneratingImage(true);
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            // Using gemini-3-pro-image-preview for high quality generation
             const response = await ai.models.generateContent({
                 model: 'gemini-3-pro-image-preview',
-                contents: {
-                   parts: [{ text: imagePrompt }]
-                },
-                config: {
-                    tools: [{ googleSearch: {} }], // Enable search grounding for better context if needed
-                }
+                contents: { parts: [{ text: imagePrompt }] },
+                config: { tools: [{ googleSearch: {} }] }
             });
 
-            // Extract image from parts
             let foundImage = null;
              if (response.candidates?.[0]?.content?.parts) {
                 for (const part of response.candidates[0].content.parts) {
@@ -988,12 +895,8 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                 }
             }
 
-            if (foundImage) {
-                setGeneratedImage(foundImage);
-            } else {
-                 alert("No image generated. Please try a different prompt.");
-            }
-
+            if (foundImage) setGeneratedImage(foundImage);
+            else alert("No image generated. Please try a different prompt.");
         } catch (e) {
             console.error(e);
             alert("Image generation failed. Please try again.");
@@ -1008,13 +911,11 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
              const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
              const response = await ai.models.generateContent({
                   model: "gemini-2.5-flash-preview-tts",
-                  contents: [{ parts: [{ text: script.substring(0, 300) }] }], // Limit char count for preview
+                  contents: [{ parts: [{ text: script.substring(0, 300) }] }],
                   config: {
                     responseModalities: [Modality.AUDIO],
                     speechConfig: {
-                        voiceConfig: {
-                          prebuiltVoiceConfig: { voiceName: selectedVoice },
-                        },
+                        voiceConfig: { prebuiltVoiceConfig: { voiceName: selectedVoice } },
                     },
                   },
              });
@@ -1024,12 +925,9 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                 const audioBlob = await (await fetch(`data:audio/mp3;base64,${base64Audio}`)).blob();
                 const url = URL.createObjectURL(audioBlob);
                 setAudioUrl(url);
-                
-                // Play immediately
                 const audio = new Audio(url);
                 audio.play();
             }
-
         } catch (e) {
             console.error("Audio generation error:", e);
         } finally {
@@ -1037,38 +935,43 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
         }
     }
 
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setUploadedImage(url);
+        }
+    };
+
     const handleGenerateVideo = async () => {
         if (user.plan === 'free') {
             setShowPricingModal(true);
             return;
         }
 
-        // Check for billing key for Veo
-        // We cast to any to avoid TS errors if types are missing in this file context,
-        // but the main fix is removing the return value check on openSelectKey().
         if (!await (window as any).aistudio.hasSelectedApiKey()) {
              await (window as any).aistudio.openSelectKey();
-             // Race condition: wait slightly or re-instantiate logic if needed. 
-             // We'll proceed assuming success as per guidelines.
         }
 
         setIsGeneratingVideo(true);
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             
-            // Determine source image
             let sourceImageBase64 = '';
+            let thumbUrl = template.thumbnailUrl;
+            
             if (visualMode === 'upload' && uploadedImage) {
-                // uploadedImage is a blob url, need to fetch it
                 sourceImageBase64 = await urlToBase64(uploadedImage);
+                thumbUrl = uploadedImage;
             } else if (visualMode === 'avatar') {
                 const currentAvatar = AVATARS.find(a => a.id === selectedAvatar);
                 if (currentAvatar) {
                     sourceImageBase64 = await urlToBase64(currentAvatar.url);
+                    thumbUrl = currentAvatar.url;
                 }
             } else if (visualMode === 'generate' && generatedImage) {
-                // generatedImage is already data url
                 sourceImageBase64 = generatedImage.split(',')[1];
+                thumbUrl = generatedImage;
             }
 
             if (!sourceImageBase64) {
@@ -1082,16 +985,15 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                 prompt: `Cinematic video of this character/product. ${prompt.substring(0,100)}`,
                 image: {
                     imageBytes: sourceImageBase64,
-                    mimeType: 'image/png', // Assumption: standard image format
+                    mimeType: 'image/png',
                 },
                 config: {
                     numberOfVideos: 1,
                     resolution: '720p',
-                    aspectRatio: '9:16' // Vertical for social media
+                    aspectRatio: '9:16'
                 }
             });
 
-            // Poll for completion
             while (!operation.done) {
                  await new Promise(resolve => setTimeout(resolve, 5000));
                  operation = await ai.operations.getVideosOperation({operation: operation});
@@ -1099,9 +1001,21 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
 
             const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
             if (downloadLink) {
-                 // The URI requires the API key appended
                  const finalVideoUrl = `${downloadLink}&key=${process.env.API_KEY}`;
                  setGeneratedVideoUrl(finalVideoUrl);
+                 
+                 // Save to My Projects
+                 const newProject: Project = {
+                     id: Math.random().toString(36).substr(2, 9),
+                     templateId: template.id,
+                     templateTitle: template.title,
+                     videoUrl: finalVideoUrl,
+                     thumbnailUrl: thumbUrl,
+                     createdAt: new Date(),
+                     platform: template.platform
+                 };
+                 addProject(newProject);
+                 setShowSuccessModal(true);
             }
 
         } catch (e) {
@@ -1112,38 +1026,65 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
         }
     };
     
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setUploadedImage(url);
-        }
-    };
-    
+    // Determine preview image source
     const currentAvatar = AVATARS.find(a => a.id === selectedAvatar);
-    
-    // Determine preview image source for UI display
     let previewImageSrc = template.thumbnailUrl;
     if (visualMode === 'upload' && uploadedImage) previewImageSrc = uploadedImage;
     if (visualMode === 'avatar' && currentAvatar) previewImageSrc = currentAvatar.url;
     if (visualMode === 'generate' && generatedImage) previewImageSrc = generatedImage;
 
+    const handleSocialShare = (platform: string) => {
+        alert(`Sharing video to ${platform}! (Integration simulated)`);
+    };
+
     return (
         <div className="min-h-screen pt-20 flex flex-col md:flex-row bg-[#0A0F1F]">
              <AmbientBackground mode="subtle" />
+            
+            {/* Success Modal Overlay */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in-up">
+                    <div className="bg-[#0E1529] border border-white/10 p-8 rounded-3xl max-w-md w-full text-center relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-vuca-blue to-vuca-yellow"></div>
+                        <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-400">
+                            <CheckCircle size={40} />
+                        </div>
+                        <h2 className="text-2xl font-bold text-white mb-2">Video Generated!</h2>
+                        <p className="text-gray-400 mb-8">Your video has been saved to "My Projects".</p>
+                        
+                        <div className="grid grid-cols-3 gap-3 mb-8">
+                             {['Instagram', 'TikTok', 'Facebook'].map(p => (
+                                 <button key={p} onClick={() => handleSocialShare(p)} className="flex flex-col items-center gap-2 group">
+                                     <div className="w-12 h-12 rounded-full bg-white/5 group-hover:bg-vuca-blue group-hover:text-white flex items-center justify-center transition-all border border-white/5">
+                                         <Share2 size={18} />
+                                     </div>
+                                     <span className="text-[10px] text-gray-400 group-hover:text-white uppercase font-bold">{p}</span>
+                                 </button>
+                             ))}
+                        </div>
+                        
+                        <div className="flex gap-3">
+                             <button onClick={() => setShowSuccessModal(false)} className="flex-1 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-colors">Close</button>
+                             <button onClick={onBack} className="flex-1 py-3 bg-vuca-blue hover:bg-blue-600 text-white font-bold rounded-xl transition-colors">Go to Dashboard</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Left Panel: Controls */}
             <div className="w-full md:w-1/3 border-r border-white/5 p-6 md:p-8 overflow-y-auto z-10 bg-[#0A0F1F]/90 backdrop-blur-xl h-auto md:h-[calc(100vh-80px)]">
                 <button onClick={onBack} className="flex items-center text-gray-400 hover:text-white mb-8 text-sm group transition-colors">
                     <ChevronRight className="rotate-180 mr-1 group-hover:-translate-x-1 transition-transform" size={16} /> Back to Templates
                 </button>
                 
-                <div className="mb-8">
+                {/* ... (Step logic mostly identical, just ensuring structure is maintained) */}
+                 <div className="mb-8">
                      <span className="text-xs font-bold text-vuca-purple px-2.5 py-1 bg-vuca-purple/10 rounded-full border border-vuca-purple/20">STEP {step} OF 2</span>
                      <h2 className="text-3xl font-heading font-bold text-white mt-4 mb-2">Create Video</h2>
                      <p className="text-sm text-gray-500">Template: <span className="text-vuca-yellow font-medium">{template.title}</span></p>
                 </div>
-
-                <div className="space-y-6">
+                
+                 <div className="space-y-6">
                     {step === 1 && (
                         <>
                             <div>
@@ -1174,9 +1115,9 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                     )}
 
                     {step >= 2 && (
-                        <div className="animate-fade-in-up space-y-8">
-                            
-                            {/* Visual Source Selection */}
+                         <div className="animate-fade-in-up space-y-8">
+                             {/* ... (Visual Source, Script Editor, Audio & Captions blocks - Same as previous version, abbreviated here for clarity) */}
+                             {/* Visual Source Selection */}
                             <div>
                                 <h3 className="text-lg font-bold text-white mb-4">1. Visual Source</h3>
                                 <div className="flex bg-white/5 p-1 rounded-xl mb-4">
@@ -1199,7 +1140,6 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                         Generate
                                     </button>
                                 </div>
-
                                 {visualMode === 'upload' && (
                                     <div 
                                         onClick={() => fileInputRef.current?.click()}
@@ -1292,7 +1232,6 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                                     3. Audio & Captions
                                 </h3>
-
                                 <div className="space-y-4">
                                     {/* Voice Selector & Generator */}
                                     <div>
@@ -1322,7 +1261,6 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                             </button>
                                         </div>
                                     </div>
-
                                     {/* Subtitle Toggle */}
                                     <div 
                                         onClick={() => setHasSubtitles(!hasSubtitles)}
@@ -1338,8 +1276,8 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div className="pt-4 flex flex-col gap-3">
+
+                             <div className="pt-4 flex flex-col gap-3">
                                 <button 
                                     onClick={handleGenerateVideo} 
                                     disabled={isGeneratingVideo}
@@ -1349,20 +1287,20 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                 </button>
                                 <button onClick={() => setStep(1)} className="w-full py-3 text-gray-400 text-sm hover:text-white transition-colors">Start Over</button>
                             </div>
-                        </div>
+                         </div>
                     )}
-                </div>
+                 </div>
             </div>
 
             {/* Right Panel: Preview */}
             <div className="flex-1 flex items-center justify-center relative overflow-hidden bg-black/50 backdrop-blur-sm p-4 md:p-8 min-h-[600px] md:min-h-[calc(100vh-80px)]">
                 {/* Phone Frame */}
                 <div className="relative w-[300px] h-[600px] md:w-[340px] md:h-[680px] border-[10px] md:border-[12px] border-[#1a1a1a] rounded-[3rem] md:rounded-[3.5rem] bg-gray-900 overflow-hidden shadow-2xl ring-1 ring-white/10 transform transition-transform">
+                     {/* ... (Same preview logic) */}
                     <div className="absolute top-0 w-full h-8 bg-[#1a1a1a] flex justify-center z-20 rounded-b-xl">
                         <div className="w-16 md:w-20 h-5 bg-black rounded-b-xl"></div>
                     </div>
 
-                    {/* Mock Content inside phone */}
                     {generatedVideoUrl ? (
                          <video 
                             src={generatedVideoUrl} 
@@ -1390,12 +1328,10 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                          </div>
                                     )}
                                  </div>
-                                 
                                  <div className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10">
                                      <Globe size={16} />
                                  </div>
                              </div>
-                            
                             <div className="space-y-4">
                                  {step >= 2 && (
                                     <div className="animate-fade-in-up bg-black/60 backdrop-blur-md p-4 rounded-2xl border-l-4 border-vuca-yellow shadow-lg">
@@ -1404,7 +1340,6 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                         </p>
                                     </div>
                                 )}
-    
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 border-2 border-white shadow-md" />
                                     <div className="flex flex-col">
@@ -1416,16 +1351,14 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                         </div>
                     )}
                 </div>
-                
-                {/* Floating particles behind phone */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-vuca-blue/5 rounded-full blur-[80px] pointer-events-none -z-10 animate-pulse-slow" />
             </div>
         </div>
     );
 };
 
 const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => void }) => {
-    const { t, user } = useAppContext();
+    const { t, user, projects } = useAppContext();
+    const [activeTab, setActiveTab] = useState<'explore' | 'projects'>('explore');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -1443,61 +1376,109 @@ const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => vo
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Dashboard Header */}
-                <div className="mb-10 animate-fade-in-up">
+                <div className="mb-8 animate-fade-in-up">
                     <h1 className="text-3xl md:text-4xl font-heading font-bold text-white mb-2">{t('dashboardTitle')}</h1>
                     <p className="text-gray-400">Welcome back, <span className="text-white font-bold">{user.email?.split('@')[0]}</span>. Create your next viral hit.</p>
                 </div>
 
-                {/* Search & Filter Bar - Removed Sticky */}
-                <div className="relative z-20 mb-10 flex flex-col md:flex-row gap-4 animate-fade-in-up animation-delay-2000">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input 
-                            type="text" 
-                            placeholder={t('searchPlaceholder')}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-[#0E1529] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-vuca-blue shadow-lg transition-all"
-                        />
-                    </div>
-                    
-                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                        {categories.map(cat => (
-                            <button 
-                                key={cat}
-                                onClick={() => setSelectedCategory(cat)}
-                                className={`px-5 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all border ${
-                                    selectedCategory === cat 
-                                    ? 'bg-vuca-blue text-white border-vuca-blue shadow-lg shadow-blue-900/30' 
-                                    : 'bg-[#0E1529] text-gray-400 border-white/10 hover:text-white hover:border-white/20'
-                                }`}
-                            >
-                                {cat}
-                            </button>
-                        ))}
-                    </div>
+                {/* Tabs */}
+                <div className="flex gap-6 border-b border-white/10 mb-8">
+                    <button 
+                        onClick={() => setActiveTab('explore')}
+                        className={`pb-4 px-2 font-bold text-sm transition-all relative ${activeTab === 'explore' ? 'text-vuca-blue' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        Explore Templates
+                        {activeTab === 'explore' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-vuca-blue rounded-full"></div>}
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('projects')}
+                        className={`pb-4 px-2 font-bold text-sm transition-all relative flex items-center gap-2 ${activeTab === 'projects' ? 'text-vuca-blue' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        My Projects
+                        <span className="bg-white/10 text-xs px-2 py-0.5 rounded-full">{projects.length}</span>
+                        {activeTab === 'projects' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-vuca-blue rounded-full"></div>}
+                    </button>
                 </div>
-                
-                {/* Grid */}
-                {filteredTemplates.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fade-in-up animation-delay-4000">
-                        {filteredTemplates.map(template => (
-                            <TemplateCard key={template.id} template={template} onSelect={onSelectTemplate} />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-20 animate-fade-in-up">
-                        <div className="inline-block p-4 rounded-full bg-white/5 mb-4">
-                            <Search size={32} className="text-gray-500" />
+
+                {activeTab === 'explore' ? (
+                    <>
+                        {/* Search & Filter Bar */}
+                        <div className="relative z-20 mb-10 flex flex-col md:flex-row gap-4 animate-fade-in-up animation-delay-2000">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                                <input 
+                                    type="text" 
+                                    placeholder={t('searchPlaceholder')}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-[#0E1529] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-vuca-blue shadow-lg transition-all"
+                                />
+                            </div>
+                            
+                            <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+                                {categories.map(cat => (
+                                    <button 
+                                        key={cat}
+                                        onClick={() => setSelectedCategory(cat)}
+                                        className={`px-5 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all border ${
+                                            selectedCategory === cat 
+                                            ? 'bg-vuca-blue text-white border-vuca-blue shadow-lg shadow-blue-900/30' 
+                                            : 'bg-[#0E1529] text-gray-400 border-white/10 hover:text-white hover:border-white/20'
+                                        }`}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-2">No templates found</h3>
-                        <p className="text-gray-400">Try adjusting your search or category filter.</p>
-                        <button 
-                            onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }}
-                            className="mt-6 text-vuca-blue font-bold hover:underline"
-                        >
-                            Clear all filters
-                        </button>
+                        
+                        {/* Templates Grid */}
+                        {filteredTemplates.length > 0 ? (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fade-in-up animation-delay-4000">
+                                {filteredTemplates.map(template => (
+                                    <TemplateCard key={template.id} template={template} onSelect={onSelectTemplate} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-20 animate-fade-in-up">
+                                <div className="inline-block p-4 rounded-full bg-white/5 mb-4">
+                                    <Search size={32} className="text-gray-500" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">No templates found</h3>
+                                <p className="text-gray-400">Try adjusting your search or category filter.</p>
+                                <button 
+                                    onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }}
+                                    className="mt-6 text-vuca-blue font-bold hover:underline"
+                                >
+                                    Clear all filters
+                                </button>
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    // Projects Grid
+                    <div className="animate-fade-in-up">
+                        {projects.length > 0 ? (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                {projects.map(project => (
+                                    <ProjectCard key={project.id} project={project} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
+                                <div className="inline-block p-4 rounded-full bg-[#0E1529] mb-4">
+                                    <Film size={32} className="text-gray-500" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">No projects yet</h3>
+                                <p className="text-gray-400 mb-6">Create your first video to start building your library.</p>
+                                <button 
+                                    onClick={() => setActiveTab('explore')}
+                                    className="bg-vuca-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-600 transition-colors"
+                                >
+                                    Create New Video
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -1507,20 +1488,26 @@ const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => vo
 
 const App = () => {
   const [lang, setLang] = useState<Language>('en');
-  const [user, setUser] = useState<UserState>({ isLoggedIn: false, email: null, plan: 'free' });
-  const [view, setView] = useState('landing'); // landing, auth, dashboard, editor
+  const [user, setUser] = useState<UserState>({ 
+      isLoggedIn: false, 
+      email: null, 
+      plan: 'free',
+      connectedAccounts: { instagram: false, tiktok: false, facebook: false, youtube: false } 
+  });
+  const [view, setView] = useState('landing');
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [showPricingModal, setShowPricingModal] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   const t = (key: string) => TRANSLATIONS[key]?.[lang] || key;
 
   const login = (email: string) => {
-      setUser({ isLoggedIn: true, email, plan: 'free' });
+      setUser({ ...user, isLoggedIn: true, email, plan: 'free' });
       setView('dashboard');
   };
 
   const logout = () => {
-      setUser({ isLoggedIn: false, email: null, plan: 'free' });
+      setUser({ ...user, isLoggedIn: false, email: null, plan: 'free' });
       setView('landing');
   };
 
@@ -1529,13 +1516,27 @@ const App = () => {
       setShowPricingModal(false);
   };
   
+  const toggleSocialConnection = (platform: keyof ConnectedAccounts) => {
+      setUser(prev => ({
+          ...prev,
+          connectedAccounts: {
+              ...prev.connectedAccounts,
+              [platform]: !prev.connectedAccounts[platform]
+          }
+      }));
+  };
+  
+  const addProject = (project: Project) => {
+      setProjects(prev => [project, ...prev]);
+  };
+  
   const handleTemplateSelect = (template: Template) => {
       setSelectedTemplate(template);
       setView('editor');
   };
 
   return (
-    <AppContext.Provider value={{ lang, setLang, t, user, login, logout, upgradePlan, showPricingModal, setShowPricingModal }}>
+    <AppContext.Provider value={{ lang, setLang, t, user, login, logout, upgradePlan, toggleSocialConnection, showPricingModal, setShowPricingModal, projects, addProject }}>
       <div className="min-h-screen font-sans text-gray-100 bg-[#0A0F1F]">
         <Navbar onViewChange={setView} />
         
@@ -1551,6 +1552,8 @@ const App = () => {
           )}
           
           {view === 'auth' && <AuthPage />}
+          
+          {view === 'profile' && <ProfilePage />}
           
           {view === 'dashboard' && <Dashboard onSelectTemplate={handleTemplateSelect} />}
           
