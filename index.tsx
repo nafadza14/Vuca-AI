@@ -29,7 +29,10 @@ import {
   Mic,
   Type,
   Image as ImageIcon,
-  Trash2
+  Trash2,
+  Twitter,
+  Instagram,
+  Youtube
 } from 'lucide-react';
 
 // --- Types & Interfaces ---
@@ -291,6 +294,131 @@ const Navbar = ({ onViewChange }: { onViewChange: (view: string) => void }) => {
   );
 };
 
+const SolutionSection = () => {
+  return (
+    <section className="py-24 bg-[#0A0F1F] relative overflow-hidden">
+        {/* Background Gradients */}
+        <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[40vw] h-[40vw] bg-vuca-blue/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid md:grid-cols-2 gap-16 items-center">
+            {/* Left Content */}
+            <div className="animate-fade-in-up">
+                 <div className="inline-block px-3 py-1 rounded-full bg-vuca-blue/10 border border-vuca-blue/20 text-vuca-blue text-xs font-bold uppercase tracking-wider mb-6">
+                    Cost Efficiency
+                 </div>
+                 <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-6 leading-tight">
+                    <span className="text-gradient-primary">Vuca AI</span> is the Solution.
+                 </h2>
+                 <p className="text-xl text-gray-300 mb-8 leading-relaxed font-light">
+                    Ready to use UGC templates + AI voiceover + video generator, so you can focus on researching angles & scaling campaigns.
+                 </p>
+                 
+                 <div className="space-y-8">
+                    <div className="flex gap-4 group">
+                        <div className="w-14 h-14 rounded-2xl bg-[#131B2E] border border-white/10 flex items-center justify-center text-white shadow-lg group-hover:border-vuca-blue/50 group-hover:bg-vuca-blue/10 transition-all shrink-0">
+                            <Layout size={28} />
+                        </div>
+                        <div>
+                            <h3 className="text-white font-bold text-lg mb-1 group-hover:text-vuca-blue transition-colors">Ready-to-use Templates</h3>
+                            <p className="text-gray-400 text-sm">Access 10,000+ viral structures. No more starting from scratch.</p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex gap-4 group">
+                        <div className="w-14 h-14 rounded-2xl bg-[#131B2E] border border-white/10 flex items-center justify-center text-white shadow-lg group-hover:border-vuca-yellow/50 group-hover:bg-vuca-yellow/10 transition-all shrink-0">
+                            <Zap size={28} />
+                        </div>
+                        <div>
+                            <h3 className="text-white font-bold text-lg mb-1 group-hover:text-vuca-yellow transition-colors">AI-Powered Production</h3>
+                            <p className="text-gray-400 text-sm">Instant voiceovers, scripting, and editing. 10x your output.</p>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+            
+            {/* Right Visual - Comparison Card */}
+             <div className="relative animate-fade-in-up animation-delay-2000">
+                 <div className="absolute inset-0 bg-gradient-to-br from-vuca-blue/20 to-vuca-purple/20 blur-2xl -z-10 rounded-3xl"></div>
+                 <div className="glass-card rounded-3xl p-8 border border-white/10 relative overflow-hidden">
+                     <div className="absolute top-0 right-0 p-4 opacity-10">
+                         <Shield size={120} />
+                     </div>
+                     
+                     <h3 className="text-white font-bold text-xl mb-8 flex items-center gap-2">
+                        <span className="w-2 h-6 bg-vuca-yellow rounded-full"></span>
+                        Savings Breakdown
+                     </h3>
+                     
+                     {/* Comparison 1: Time */}
+                     <div className="mb-8">
+                         <div className="flex justify-between text-sm mb-3">
+                             <span className="text-gray-400">Time per Video</span>
+                         </div>
+                         <div className="space-y-3">
+                             <div className="relative">
+                                 <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                                     <span>Manual Editing</span>
+                                     <span>3-4 Hours</span>
+                                 </div>
+                                 <div className="h-10 bg-white/5 rounded-lg flex items-center px-3 relative overflow-hidden">
+                                     <div className="absolute inset-y-0 left-0 bg-gray-700 w-full opacity-20"></div>
+                                     <span className="relative z-10 text-gray-400 text-xs font-mono">TRADITIONAL</span>
+                                 </div>
+                             </div>
+                             
+                             <div className="relative">
+                                 <div className="flex items-center justify-between text-xs text-vuca-blue mb-1">
+                                     <span className="font-bold">Vuca AI</span>
+                                     <span className="font-bold">5 Minutes</span>
+                                 </div>
+                                 <div className="h-10 bg-vuca-blue/10 border border-vuca-blue/30 rounded-lg flex items-center px-3 relative overflow-hidden">
+                                      <div className="absolute inset-y-0 left-0 bg-vuca-blue w-[5%] shadow-[0_0_20px_#0047FF]"></div>
+                                     <span className="relative z-10 text-white text-xs font-mono font-bold flex items-center gap-2">
+                                         <Zap size={12} className="text-vuca-yellow fill-current" /> FAST
+                                     </span>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+
+                     {/* Comparison 2: Cost */}
+                     <div>
+                         <div className="flex justify-between text-sm mb-3">
+                             <span className="text-gray-400">Cost per Asset</span>
+                         </div>
+                         <div className="grid grid-cols-2 gap-4">
+                             <div className="bg-white/5 rounded-xl p-4 text-center">
+                                 <div className="text-gray-500 text-xs uppercase mb-1">Agency</div>
+                                 <div className="text-2xl font-bold text-gray-400">$150</div>
+                             </div>
+                             <div className="bg-gradient-to-br from-vuca-blue/20 to-vuca-blue/10 border border-vuca-blue/30 rounded-xl p-4 text-center relative overflow-hidden">
+                                 <div className="absolute top-0 right-0 w-8 h-8 bg-vuca-yellow blur-lg opacity-40"></div>
+                                 <div className="text-vuca-blue text-xs uppercase mb-1 font-bold">Vuca AI</div>
+                                 <div className="text-2xl font-bold text-white">$0.20</div>
+                             </div>
+                         </div>
+                     </div>
+
+                 </div>
+                 
+                 {/* Floating Badge */}
+                 <div className="absolute -bottom-6 -right-6 bg-[#0E1529] border border-white/10 p-4 rounded-2xl shadow-xl flex items-center gap-3 animate-float">
+                     <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+                         <div className="font-bold text-xs">+90%</div>
+                     </div>
+                     <div>
+                         <div className="text-gray-400 text-xs">Margin Increase</div>
+                         <div className="text-white font-bold text-sm">Guaranteed</div>
+                     </div>
+                 </div>
+             </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 const HowItWorks = () => {
     const { t } = useAppContext();
     return (
@@ -338,6 +466,51 @@ const HowItWorks = () => {
             </div>
         </section>
     );
+}
+
+const Footer = () => {
+  return (
+    <footer className="bg-[#0A0F1F] border-t border-white/5 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid md:grid-cols-4 gap-8 mb-12">
+                <div className="col-span-1 md:col-span-2">
+                    <span className="font-heading font-bold text-2xl text-white block mb-4">VUCA<span className="text-vuca-blue">.AI</span></span>
+                    <p className="text-gray-400 max-w-xs mb-6">Automate Your Content. Scale Your Revenue. The #1 AI UGC Video Generator for Affiliates.</p>
+                    <div className="flex gap-4">
+                        {[<Twitter size={20}/>, <Instagram size={20}/>, <Youtube size={20}/>].map((icon, i) => (
+                            <div key={i} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 cursor-pointer transition-all">
+                                {icon}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 className="text-white font-bold mb-4">Product</h4>
+                    <ul className="space-y-2 text-gray-400 text-sm">
+                        <li className="hover:text-vuca-blue cursor-pointer">Templates</li>
+                        <li className="hover:text-vuca-blue cursor-pointer">Pricing</li>
+                        <li className="hover:text-vuca-blue cursor-pointer">Showcase</li>
+                        <li className="hover:text-vuca-blue cursor-pointer">Roadmap</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 className="text-white font-bold mb-4">Company</h4>
+                    <ul className="space-y-2 text-gray-400 text-sm">
+                        <li className="hover:text-vuca-blue cursor-pointer">About Us</li>
+                        <li className="hover:text-vuca-blue cursor-pointer">Contact</li>
+                        <li className="hover:text-vuca-blue cursor-pointer">Privacy Policy</li>
+                        <li className="hover:text-vuca-blue cursor-pointer">Terms of Service</li>
+                    </ul>
+                </div>
+            </div>
+            <div className="border-t border-white/5 pt-8 text-center text-gray-500 text-sm">
+                © 2025 Vuca AI. All rights reserved.
+            </div>
+        </div>
+    </footer>
+  );
 }
 
 const Hero = ({ onStart }: { onStart: () => void }) => {
@@ -900,4 +1073,130 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
     );
 };
 
-const Dashboard = () => {
+const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => void }) => {
+    const { t } = useAppContext();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('All');
+
+    const categories = ['All', 'Fashion', 'Tech', 'Food', 'Beauty', 'Home', 'Fitness'];
+
+    const filteredTemplates = MOCK_TEMPLATES.filter(t => {
+        const matchesSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = selectedCategory === 'All' || t.category === selectedCategory;
+        return matchesSearch && matchesCategory;
+    });
+
+    return (
+        <div className="min-h-screen pt-20 px-4 md:px-8 bg-[#0A0F1F] pb-20">
+             <AmbientBackground mode="dashboard" />
+             
+             <div className="max-w-7xl mx-auto">
+                <div className="mb-10">
+                    <h1 className="text-3xl md:text-4xl font-heading font-bold text-white mb-2">{t('dashboardTitle')}</h1>
+                    <p className="text-gray-400">Select a viral template to get started.</p>
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-4 mb-8 sticky top-20 z-30 bg-[#0A0F1F]/80 backdrop-blur-md py-4 -mx-4 px-4 md:mx-0 md:px-0 md:bg-transparent md:backdrop-filter-none">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                        <input 
+                            type="text" 
+                            placeholder={t('searchPlaceholder')}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full bg-[#131B2E] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-vuca-blue shadow-lg"
+                        />
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+                        {categories.map(cat => (
+                            <button 
+                                key={cat}
+                                onClick={() => setSelectedCategory(cat)}
+                                className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${
+                                    selectedCategory === cat 
+                                    ? 'bg-vuca-blue text-white border-vuca-blue shadow-lg shadow-blue-900/30' 
+                                    : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+                                }`}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {filteredTemplates.map(template => (
+                        <TemplateCard key={template.id} template={template} onSelect={onSelectTemplate} />
+                    ))}
+                </div>
+             </div>
+        </div>
+    );
+};
+
+const App = () => {
+  const [lang, setLang] = useState<Language>('en');
+  const [view, setView] = useState('landing'); // landing, auth, dashboard, editor
+  const [user, setUser] = useState<UserState>({ isLoggedIn: false, email: null, plan: 'free' });
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+
+  const t = (key: string) => TRANSLATIONS[key]?.[lang] || key;
+
+  const login = (email: string) => {
+    setUser({ isLoggedIn: true, email, plan: 'free' });
+    setView('dashboard');
+  };
+
+  const logout = () => {
+    setUser({ isLoggedIn: false, email: null, plan: 'free' });
+    setView('landing');
+  };
+
+  const upgradePlan = (plan: UserPlan) => {
+    setUser(prev => ({ ...prev, plan }));
+    setShowPricingModal(false);
+  };
+  
+  const handleSelectTemplate = (template: Template) => {
+      setSelectedTemplate(template);
+      setView('editor');
+  }
+
+  const handleBackToDashboard = () => {
+      setSelectedTemplate(null);
+      setView('dashboard');
+  }
+
+  return (
+    <AppContext.Provider value={{ lang, setLang, t, user, login, logout, upgradePlan, showPricingModal, setShowPricingModal }}>
+      <div className="font-sans text-gray-100 min-h-screen">
+        <Navbar onViewChange={setView} />
+        
+        {view === 'landing' && (
+          <>
+            <Hero onStart={() => setView('auth')} />
+            <SolutionSection />
+            <HowItWorks />
+            <Footer />
+          </>
+        )}
+
+        {view === 'auth' && <AuthPage />}
+        
+        {view === 'dashboard' && <Dashboard onSelectTemplate={handleSelectTemplate} />}
+        
+        {view === 'editor' && selectedTemplate && (
+            <Editor template={selectedTemplate} onBack={handleBackToDashboard} />
+        )}
+
+        {showPricingModal && (
+            <PricingModal onClose={() => setShowPricingModal(false)} onUpgrade={upgradePlan} />
+        )}
+      </div>
+    </AppContext.Provider>
+  );
+};
+
+const root = createRoot(document.getElementById('root')!);
+root.render(<App />);
