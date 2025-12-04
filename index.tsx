@@ -1433,16 +1433,17 @@ const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => vo
     });
 
     return (
-        <div className="min-h-screen pt-20 px-4 md:px-8 bg-[#0A0F1F] pb-20">
+        <div className="min-h-screen pt-24 px-4 md:px-8 bg-[#0A0F1F] pb-20">
              <AmbientBackground mode="dashboard" />
              
              <div className="max-w-7xl mx-auto">
-                <div className="mb-10">
+                <div className="mb-8">
                     <h1 className="text-3xl md:text-4xl font-heading font-bold text-white mb-2">{t('dashboardTitle')}</h1>
                     <p className="text-gray-400">Select a viral template to get started.</p>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-4 mb-8 sticky top-20 z-30 bg-[#0A0F1F]/80 backdrop-blur-md py-4 -mx-4 px-4 md:mx-0 md:px-0 md:bg-transparent md:backdrop-filter-none">
+                {/* Removed sticky, fixed background issues */}
+                <div className="flex flex-col md:flex-row gap-4 mb-8 relative z-20">
                     <div className="relative flex-1">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                         <input 
@@ -1450,7 +1451,7 @@ const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => vo
                             placeholder={t('searchPlaceholder')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-[#131B2E] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-vuca-blue shadow-lg"
+                            className="w-full bg-[#131B2E] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-vuca-blue shadow-lg transition-all hover:border-white/20"
                         />
                     </div>
                     <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
@@ -1470,7 +1471,7 @@ const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => vo
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 z-10 relative">
                     {filteredTemplates.map(template => (
                         <TemplateCard key={template.id} template={template} onSelect={onSelectTemplate} />
                     ))}
