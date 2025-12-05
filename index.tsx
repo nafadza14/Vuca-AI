@@ -1077,7 +1077,8 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
         if (!prompt) return;
         setLoading(true);
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            // Use Vite env variable
+            const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
             const response = await ai.models.generateContent({
                 model: 'gemini-3-pro-preview',
                 contents: `Write a short, engaging video script (under 60 seconds) for a ${template.platform} video about: "${prompt}". 
@@ -1108,7 +1109,7 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
         if (!imagePrompt) return;
         setIsGeneratingImage(true);
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
             const response = await ai.models.generateContent({
                 model: 'gemini-3-pro-image-preview',
                 contents: { parts: [{ text: imagePrompt }] },
@@ -1138,7 +1139,7 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
     const handleGenerateAudio = async () => {
         setIsGeneratingAudio(true);
         try {
-             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+             const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
              const response = await ai.models.generateContent({
                   model: "gemini-2.5-flash-preview-tts",
                   contents: [{ parts: [{ text: script.substring(0, 300) }] }],
@@ -1185,7 +1186,7 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
 
         setIsGeneratingVideo(true);
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
             
             let sourceImageBase64 = '';
             let thumbUrl = template.thumbnailUrl;
@@ -1231,7 +1232,7 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
 
             const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
             if (downloadLink) {
-                 const finalVideoUrl = `${downloadLink}&key=${process.env.API_KEY}`;
+                 const finalVideoUrl = `${downloadLink}&key=${import.meta.env.VITE_API_KEY}`;
                  setGeneratedVideoUrl(finalVideoUrl);
                  
                  // Save to My Projects

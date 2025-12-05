@@ -20,7 +20,7 @@
                 grey: '#F5F7FA',
                 purple: '#B4A9FF',
                 cyan: '#00D1FF',
-                slate: '#64748B', // New secondary text color
+                slate: '#64748B',
               }
             },
             fontFamily: {
@@ -92,7 +92,6 @@
         overflow-x: hidden;
       }
       
-      /* Sophisticated Gradient Utilities */
       .animation-delay-2000 { animation-delay: 2s; }
       .animation-delay-4000 { animation-delay: 4s; }
       .animation-delay-6000 { animation-delay: 6s; }
@@ -132,7 +131,6 @@
         background-clip: text;
       }
 
-      /* Hover Gradient Border Effect */
       .gradient-border-card {
         position: relative;
         background: #FFFFFF;
@@ -166,11 +164,9 @@
         100% { background-position: 0% 50%; }
       }
 
-      /* Scrollbar hiding */
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       
-      /* Pause marquee on hover */
       .hover\:pause:hover {
         animation-play-state: paused;
       }
@@ -179,10 +175,12 @@
 {
   "imports": {
     "react": "https://aistudiocdn.com/react@^19.2.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/"
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
+    "vite": "https://aistudiocdn.com/vite@^7.2.6"
   }
 }
 </script>
