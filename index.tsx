@@ -45,7 +45,10 @@ import {
   LogOut,
   Film,
   Link as LinkIcon,
-  Heart
+  Heart,
+  Layers,
+  Smartphone,
+  PhoneCall
 } from 'lucide-react';
 
 // --- Types & Interfaces ---
@@ -54,7 +57,7 @@ interface Template {
   id: string;
   title: string;
   category: 'Fashion' | 'Tech' | 'Food' | 'Beauty' | 'Home' | 'Fitness' | 'Gaming';
-  platform: 'TikTok' | 'Shopee' | 'Instagram' | 'YouTube';
+  platform: 'TikTok' | 'Shopee' | 'Instagram' | 'Facebook';
   duration: string;
   thumbnailUrl: string;
 }
@@ -66,11 +69,11 @@ interface Project {
   videoUrl: string;
   thumbnailUrl: string; // Usually the source image or template thumb
   createdAt: Date;
-  platform: 'TikTok' | 'Shopee' | 'Instagram' | 'YouTube';
+  platform: 'TikTok' | 'Shopee' | 'Instagram' | 'Facebook';
 }
 
 type Language = 'en' | 'id';
-type UserPlan = 'free' | 'starter' | 'creator' | 'pro';
+type UserPlan = 'free' | 'basic' | 'pro' | 'max';
 
 interface Translation {
   [key: string]: {
@@ -99,12 +102,13 @@ const TRANSLATIONS: Translation = {
     id: "Gabung Waitlist Beta"
   },
   navHome: { en: "Home", id: "Beranda" },
-  navTemplates: { en: "Templates", id: "Templat" },
-  navProjects: { en: "My Projects", id: "Proyek Saya" },
+  navUseCase: { en: "Use Case", id: "Kegunaan" },
   navPricing: { en: "Pricing", id: "Harga" },
+  navTemplates: { en: "Templates", id: "Templat" },
   navLogin: { en: "Login", id: "Masuk" },
   navProfile: { en: "Profile", id: "Profil" },
   navLogout: { en: "Logout", id: "Keluar" },
+  navProjects: { en: "My Projects", id: "Proyek Saya" },
   featureSmart: { en: "Smart AI", id: "AI Pintar" },
   featureFast: { en: "Fast Generation", id: "Generasi Cepat" },
   dashboardTitle: { en: "Creator Dashboard", id: "Dasbor Kreator" },
@@ -115,8 +119,6 @@ const TRANSLATIONS: Translation = {
   scriptResult: { en: "Generated Script", id: "Skrip Terbuat" },
   pricingTitle: { en: "Unlock Full Access", id: "Buka Akses Penuh" },
   pricingSubtitle: { en: "Choose a plan to generate unlimited videos.", id: "Pilih paket untuk membuat video tanpa batas." },
-  howItWorksTitle: { en: "How It Works", id: "Cara Kerja" },
-  howItWorksSubtitle: { en: "Create viral videos in 3 simple steps.", id: "Buat video viral dalam 3 langkah mudah." },
 };
 
 const MOCK_TEMPLATES: Template[] = [
@@ -126,10 +128,10 @@ const MOCK_TEMPLATES: Template[] = [
   { id: '4', title: 'Skincare Routine', category: 'Beauty', platform: 'Shopee', duration: '45s', thumbnailUrl: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&q=80' },
   { id: '5', title: 'Gadget Unboxing', category: 'Tech', platform: 'TikTok', duration: '60s', thumbnailUrl: 'https://images.unsplash.com/photo-1593341646261-fa50669169a6?w=400&q=80' },
   { id: '6', title: 'Street Style', category: 'Fashion', platform: 'Instagram', duration: '15s', thumbnailUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&q=80' },
-  { id: '7', title: 'Coffee Brewing', category: 'Food', platform: 'Instagram', duration: '25s', thumbnailUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80' },
+  { id: '7', title: 'Coffee Brewing', category: 'Food', platform: 'Facebook', duration: '25s', thumbnailUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80' },
   { id: '8', title: 'Setup Tour', category: 'Tech', platform: 'TikTok', duration: '45s', thumbnailUrl: 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=400&q=80' },
-  { id: '9', title: 'Fitness Motivation', category: 'Fitness', platform: 'TikTok', duration: '20s', thumbnailUrl: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=80' },
-  { id: '10', title: 'Gaming Highlights', category: 'Gaming', platform: 'YouTube', duration: '60s', thumbnailUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&q=80' },
+  { id: '9', title: 'Fitness Motivation', category: 'Fitness', platform: 'Facebook', duration: '20s', thumbnailUrl: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=80' },
+  { id: '10', title: 'Gaming Highlights', category: 'Gaming', platform: 'Facebook', duration: '60s', thumbnailUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&q=80' },
   { id: '11', title: 'Home Decor', category: 'Home', platform: 'Instagram', duration: '15s', thumbnailUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&q=80' },
   { id: '12', title: 'Makeup Tutorial', category: 'Beauty', platform: 'TikTok', duration: '45s', thumbnailUrl: 'https://images.unsplash.com/photo-1596462502278-27bfdd403348?w=400&q=80' },
 ];
@@ -150,10 +152,10 @@ const AVATARS = [
 
 const FAQ_DATA = [
     { q: "What is Vuca AI?", a: "Vuca AI is an automated video generation platform designed specifically for affiliate marketers. We help you turn product links into viral user-generated content (UGC) scripts and videos in minutes." },
-    { q: "Is it free to start?", a: "We offer a Starter plan at just $10/month. We do not have a free tier, but our pricing is designed to be affordable for affiliates scaling their revenue." },
+    { q: "Is it free to start?", a: "We offer a Basic plan at just $23/month. We do not have a free tier, but our pricing is designed to be affordable for affiliates scaling their revenue." },
     { q: "Can I use my own footage?", a: "Yes! You can upload your own product photos and videos. Alternatively, you can use our AI models to present your product for you." },
     { q: "What languages do you support?", a: "Currently, we support English and Bahasa Indonesia, with optimized voiceovers for both markets." },
-    { q: "Which platforms are supported?", a: "Our templates are optimized for TikTok, Shopee Video, Instagram Reels, and YouTube Shorts." },
+    { q: "Which platforms are supported?", a: "Our templates are optimized for TikTok, Shopee Video, Instagram Reels, and Facebook Video." },
 ];
 
 // --- Context ---
@@ -241,34 +243,34 @@ const urlToBase64 = async (url: string): Promise<string> => {
 
 const AmbientBackground = ({ mode = 'hero' }: { mode?: 'hero' | 'pricing' | 'dashboard' | 'subtle' }) => {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-      <div className={`absolute top-0 left-0 w-full h-full bg-[#0A0F1F] transition-colors duration-1000`}></div>
+    <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10 bg-white">
+      {/* Primary Vuca Blue Gradient Background */}
       
       {mode === 'hero' && (
         <>
-          <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-vuca-blue/40 rounded-full mix-blend-screen filter blur-[120px] animate-morph opacity-60" />
-          <div className="absolute top-[20%] right-[-20%] w-[50vw] h-[50vw] bg-vuca-purple/30 rounded-full mix-blend-screen filter blur-[100px] animate-float opacity-50" />
-          <div className="absolute bottom-[-10%] left-[20%] w-[40vw] h-[40vw] bg-vuca-yellow/20 rounded-full mix-blend-overlay filter blur-[130px] animate-pulse-slow opacity-30" />
-          <div className="absolute top-[40%] left-[40%] w-[20vw] h-[20vw] bg-vuca-cyan/20 rounded-full mix-blend-screen filter blur-[80px] animate-blob animation-delay-2000" />
+          <div className="absolute top-[-20%] left-[-10%] w-[80vw] h-[80vw] bg-vuca-blue/20 rounded-full mix-blend-multiply filter blur-[120px] animate-morph opacity-60" />
+          <div className="absolute top-[10%] right-[-10%] w-[60vw] h-[60vw] bg-vuca-purple/30 rounded-full mix-blend-multiply filter blur-[100px] animate-float opacity-50" />
+          <div className="absolute bottom-[-10%] left-[20%] w-[50vw] h-[50vw] bg-vuca-yellow/20 rounded-full mix-blend-multiply filter blur-[130px] animate-pulse-slow opacity-40" />
+          <div className="absolute top-[40%] left-[40%] w-[30vw] h-[30vw] bg-vuca-cyan/20 rounded-full mix-blend-multiply filter blur-[80px] animate-blob animation-delay-2000" />
         </>
       )}
 
       {(mode === 'pricing') && (
         <>
-           <div className="absolute inset-0 bg-gradient-to-tr from-vuca-blue/20 via-vuca-purple/10 to-vuca-yellow/5 animate-aurora opacity-50" style={{ backgroundSize: '200% 200%' }} />
-           <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] bg-vuca-blue/30 rounded-[100%] blur-[120px]" />
-           <div className="absolute bottom-0 right-0 w-[60vw] h-[60vw] bg-vuca-purple/20 rounded-full blur-[150px] animate-pulse-slow" />
+           <div className="absolute inset-0 bg-gradient-to-tr from-vuca-blue/5 via-white to-vuca-yellow/5 animate-aurora opacity-80" style={{ backgroundSize: '200% 200%' }} />
+           <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80vw] h-[50vh] bg-vuca-blue/10 rounded-[100%] blur-[120px]" />
+           <div className="absolute bottom-0 right-0 w-[60vw] h-[60vw] bg-vuca-purple/10 rounded-full blur-[150px] animate-pulse-slow" />
         </>
       )}
 
       {(mode === 'dashboard' || mode === 'subtle') && (
         <>
-           <div className="absolute top-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-vuca-blue/10 rounded-full mix-blend-screen filter blur-[150px]" />
-           <div className="absolute bottom-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-vuca-purple/10 rounded-full mix-blend-screen filter blur-[150px]" />
+           <div className="absolute top-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-vuca-blue/5 rounded-full mix-blend-multiply filter blur-[150px]" />
+           <div className="absolute bottom-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-vuca-purple/5 rounded-full mix-blend-multiply filter blur-[150px]" />
         </>
       )}
       
-      <div className="absolute inset-0 opacity-[0.04] pointer-events-none" 
+      <div className="absolute inset-0 opacity-[0.2] pointer-events-none" 
            style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}>
       </div>
     </div>
@@ -319,36 +321,54 @@ const Navbar = ({ onViewChange }: { onViewChange: (view: string) => void }) => {
     };
   }, []);
 
+  const scrollToSection = (id: string) => {
+      onViewChange('landing');
+      setTimeout(() => {
+          const element = document.getElementById(id);
+          if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+          }
+      }, 100);
+      setMobileMenuOpen(false);
+  };
+
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'premium-glass py-2 md:py-3' : 'bg-transparent py-4 md:py-6'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-12">
-          <div className="flex-shrink-0 cursor-pointer group" onClick={() => onViewChange('landing')}>
+          {/* Logo */}
+          <div className="flex-shrink-0 cursor-pointer group" onClick={() => user.isLoggedIn ? onViewChange('dashboard') : scrollToSection('hero')}>
             <div className="flex items-center gap-2 md:gap-3">
-               <div className="w-8 h-8 md:w-10 md:h-10 relative flex items-center justify-center">
-                 <div className="absolute inset-0 bg-gradient-to-br from-vuca-blue to-blue-600 rounded-xl transform rotate-3 group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-blue-500/30"></div>
-                 <div className="absolute inset-0 bg-vuca-blue/40 rounded-xl transform -rotate-3 blur-sm group-hover:blur-md transition-all"></div>
-                 <span className="relative text-vuca-yellow font-heading font-bold text-lg md:text-xl z-10 drop-shadow-md">V</span>
+               <div className="w-10 h-10 md:w-12 md:h-12 relative flex items-center justify-center filter drop-shadow-md">
+                 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full transform transition-transform group-hover:scale-105">
+                    <path d="M25 25 L45 55 A 5 5 0 0 0 50 60 L 50 60 L 50 40 L 35 15 Z" fill="#0047FF" stroke="#0047FF" strokeWidth="20" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M50 60 L 80 25" stroke="#FFD33C" strokeWidth="20" strokeLinecap="round" strokeLinejoin="round"/>
+                 </svg>
                </div>
-               <span className="font-heading font-bold text-xl md:text-2xl tracking-tight text-white group-hover:text-gray-200 transition-colors">
-                 VUCA<span className="text-vuca-blue">.AI</span>
+               <span className="font-heading font-extrabold text-2xl md:text-3xl tracking-tight text-vuca-navy group-hover:opacity-80 transition-opacity">
+                 <span className="text-vuca-navy">VUCA</span>
+                 <span className="text-gradient-vuca">.AI</span>
                </span>
             </div>
           </div>
           
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-center space-x-1 bg-white/5 backdrop-blur-md px-2 py-1.5 rounded-full border border-white/5">
-              <button onClick={() => onViewChange('landing')} className="text-gray-300 hover:text-white px-5 py-2 rounded-full text-sm font-medium transition-all hover:bg-white/10">{t('navHome')}</button>
-              {user.isLoggedIn && (
-                <button onClick={() => onViewChange('dashboard')} className="text-gray-300 hover:text-white px-5 py-2 rounded-full text-sm font-medium transition-all hover:bg-white/10">{t('navTemplates')}</button>
-              )}
+          {/* Main Navigation - Hidden when logged in */}
+          {!user.isLoggedIn && (
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-center space-x-1 bg-white/50 backdrop-blur-md px-2 py-1.5 rounded-full border border-gray-200/50 shadow-sm">
+                <button onClick={() => scrollToSection('hero')} className="text-gray-600 hover:text-vuca-blue px-5 py-2 rounded-full text-sm font-semibold transition-all hover:bg-white">{t('navHome')}</button>
+                <button onClick={() => scrollToSection('use-case')} className="text-gray-600 hover:text-vuca-blue px-5 py-2 rounded-full text-sm font-semibold transition-all hover:bg-white">{t('navUseCase')}</button>
+                <button onClick={() => scrollToSection('pricing')} className="text-gray-600 hover:text-vuca-blue px-5 py-2 rounded-full text-sm font-semibold transition-all hover:bg-white">{t('navPricing')}</button>
+                <button onClick={() => onViewChange('auth')} className="text-gray-600 hover:text-vuca-blue px-5 py-2 rounded-full text-sm font-semibold transition-all hover:bg-white">{t('navTemplates')}</button>
+              </div>
             </div>
-          </div>
+          )}
 
+          {/* User & Action Buttons */}
           <div className="hidden md:flex items-center gap-4">
              <button 
                 onClick={() => setLang(lang === 'en' ? 'id' : 'en')}
-                className="flex items-center gap-1 text-gray-400 hover:text-white text-xs uppercase font-semibold px-2 py-1 rounded hover:bg-white/5 transition-all"
+                className="flex items-center gap-1 text-gray-500 hover:text-vuca-blue text-xs uppercase font-bold px-2 py-1 rounded hover:bg-gray-100 transition-all"
              >
                 <Globe size={14} />
                 {lang}
@@ -357,28 +377,28 @@ const Navbar = ({ onViewChange }: { onViewChange: (view: string) => void }) => {
              {user.isLoggedIn ? (
                <div className="flex items-center gap-3 relative" ref={dropdownRef}>
                  <div 
-                    className="flex items-center gap-3 cursor-pointer p-1 rounded-full hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-3 cursor-pointer p-1 rounded-full hover:bg-gray-100 transition-colors"
                     onClick={() => setProfileMenuOpen(!profileMenuOpen)}
                  >
                      <div className="flex flex-col items-end">
-                        <span className="text-xs text-gray-400">Welcome,</span>
-                        <span className="text-sm font-bold text-white">{user.email?.split('@')[0]}</span>
+                        <span className="text-xs text-gray-500">Welcome,</span>
+                        <span className="text-sm font-bold text-vuca-navy">{user.email?.split('@')[0]}</span>
                      </div>
-                     <div className="w-9 h-9 rounded-full bg-vuca-blue flex items-center justify-center text-white font-bold ring-2 ring-white/10">
+                     <div className="w-9 h-9 rounded-full bg-vuca-blue flex items-center justify-center text-white font-bold ring-2 ring-white">
                         {user.email?.[0].toUpperCase()}
                      </div>
                  </div>
 
                  {profileMenuOpen && (
-                     <div className="absolute top-14 right-0 w-48 bg-[#0E1529] border border-white/10 rounded-xl shadow-2xl py-2 overflow-hidden animate-fade-in-up">
-                        <button onClick={() => { onViewChange('profile'); setProfileMenuOpen(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2">
+                     <div className="absolute top-14 right-0 w-48 bg-white border border-gray-100 rounded-xl shadow-xl py-2 overflow-hidden animate-fade-in-up">
+                        <button onClick={() => { onViewChange('profile'); setProfileMenuOpen(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-600 hover:text-vuca-blue hover:bg-gray-50 flex items-center gap-2">
                              <User size={16} /> {t('navProfile')}
                         </button>
-                        <button onClick={() => { onViewChange('dashboard'); setProfileMenuOpen(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2">
+                        <button onClick={() => { onViewChange('dashboard'); setProfileMenuOpen(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-600 hover:text-vuca-blue hover:bg-gray-50 flex items-center gap-2">
                              <Film size={16} /> {t('navProjects')}
                         </button>
-                        <div className="border-t border-white/10 my-1"></div>
-                        <button onClick={logout} className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-2">
+                        <div className="border-t border-gray-100 my-1"></div>
+                        <button onClick={logout} className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2">
                              <LogOut size={16} /> {t('navLogout')}
                         </button>
                      </div>
@@ -386,10 +406,10 @@ const Navbar = ({ onViewChange }: { onViewChange: (view: string) => void }) => {
                </div>
              ) : (
                 <>
-                  <button onClick={() => onViewChange('auth')} className="text-white hover:text-vuca-yellow transition-colors font-medium text-sm px-3">
+                  <button onClick={() => onViewChange('auth')} className="text-gray-600 hover:text-vuca-blue transition-colors font-bold text-sm px-3">
                       {t('navLogin')}
                   </button>
-                  <button onClick={() => onViewChange('auth')} className="relative group overflow-hidden bg-vuca-blue text-white px-6 py-2.5 rounded-full font-medium text-sm transition-all shadow-[0_0_20px_rgba(0,71,255,0.4)] hover:shadow-[0_0_30px_rgba(0,71,255,0.6)] hover:-translate-y-0.5">
+                  <button onClick={() => onViewChange('auth')} className="relative group overflow-hidden bg-vuca-blue text-white px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-[0_4px_14px_rgba(0,71,255,0.3)] hover:shadow-[0_6px_20px_rgba(0,71,255,0.4)] hover:-translate-y-0.5">
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-vuca-blue opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <span className="relative flex items-center gap-2">{t('ctaStart')} <ChevronRight size={14} /></span>
                   </button>
@@ -397,8 +417,9 @@ const Navbar = ({ onViewChange }: { onViewChange: (view: string) => void }) => {
              )}
           </div>
 
+          {/* Mobile Menu Toggle */}
           <div className="-mr-2 flex md:hidden">
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-vuca-blue hover:bg-gray-100 focus:outline-none">
               {mobileMenuOpen ? <X /> : <Menu />}
             </button>
           </div>
@@ -407,23 +428,31 @@ const Navbar = ({ onViewChange }: { onViewChange: (view: string) => void }) => {
       
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#0A0F1F] border-b border-white/10 absolute w-full backdrop-blur-xl bg-opacity-95 z-50">
+        <div className="md:hidden bg-white border-b border-gray-100 absolute w-full backdrop-blur-xl bg-opacity-95 z-50 shadow-lg">
           <div className="px-4 pt-4 pb-6 space-y-2">
-             <button onClick={() => { onViewChange('landing'); setMobileMenuOpen(false); }} className="text-gray-300 hover:text-white block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('navHome')}</button>
-             {user.isLoggedIn && (
+             {!user.isLoggedIn && (
                <>
-                 <button onClick={() => { onViewChange('dashboard'); setMobileMenuOpen(false); }} className="text-gray-300 hover:text-white block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('navTemplates')}</button>
-                 <button onClick={() => { onViewChange('profile'); setMobileMenuOpen(false); }} className="text-gray-300 hover:text-white block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('navProfile')}</button>
+                 <button onClick={() => scrollToSection('hero')} className="text-gray-800 hover:text-vuca-blue block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('navHome')}</button>
+                 <button onClick={() => scrollToSection('use-case')} className="text-gray-800 hover:text-vuca-blue block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('navUseCase')}</button>
+                 <button onClick={() => scrollToSection('pricing')} className="text-gray-800 hover:text-vuca-blue block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('navPricing')}</button>
+                 <button onClick={() => { onViewChange('auth'); setMobileMenuOpen(false); }} className="text-gray-800 hover:text-vuca-blue block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('navTemplates')}</button>
                </>
              )}
              
-             <div className="border-t border-white/10 my-4 pt-4">
+             {user.isLoggedIn && (
+               <>
+                 <button onClick={() => { onViewChange('dashboard'); setMobileMenuOpen(false); }} className="text-gray-800 hover:text-vuca-blue block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('dashboardTitle')}</button>
+                 <button onClick={() => { onViewChange('profile'); setMobileMenuOpen(false); }} className="text-gray-800 hover:text-vuca-blue block px-3 py-3 rounded-md text-lg font-medium w-full text-left">{t('navProfile')}</button>
+               </>
+             )}
+             
+             <div className="border-t border-gray-100 my-4 pt-4">
                {user.isLoggedIn ? (
-                 <button onClick={logout} className="w-full bg-white/10 text-white px-4 py-3 rounded-xl font-bold mb-4">{t('navLogout')}</button>
+                 <button onClick={logout} className="w-full bg-gray-100 text-gray-900 px-4 py-3 rounded-xl font-bold mb-4">{t('navLogout')}</button>
                ) : (
-                 <button onClick={() => { onViewChange('auth'); setMobileMenuOpen(false); }} className="w-full bg-vuca-blue text-white px-4 py-3 rounded-xl font-bold mb-4">{t('ctaStart')}</button>
+                 <button onClick={() => { onViewChange('auth'); setMobileMenuOpen(false); }} className="w-full bg-vuca-blue text-white px-4 py-3 rounded-xl font-bold mb-4 shadow-lg shadow-blue-500/30">{t('ctaStart')}</button>
                )}
-               <button onClick={() => setLang(lang === 'en' ? 'id' : 'en')} className="text-gray-400 uppercase font-bold border border-white/10 px-4 py-2 rounded-lg text-sm">{lang}</button>
+               <button onClick={() => setLang(lang === 'en' ? 'id' : 'en')} className="text-gray-500 uppercase font-bold border border-gray-200 px-4 py-2 rounded-lg text-sm">{lang}</button>
              </div>
           </div>
         </div>
@@ -435,30 +464,30 @@ const Navbar = ({ onViewChange }: { onViewChange: (view: string) => void }) => {
 const Hero = ({ onStart }: { onStart: () => void }) => {
   const { t } = useAppContext();
   return (
-    <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-hidden">
+    <div id="hero" className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-hidden">
       <AmbientBackground mode="hero" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-8 animate-fade-in-up">
-           <span className="flex h-2 w-2 rounded-full bg-green-400 animate-pulse"></span>
-           <span className="text-xs font-medium text-gray-300">Vuca AI Beta is Live</span>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm mb-8 animate-fade-in-up">
+           <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+           <span className="text-xs font-semibold text-gray-600">Vuca AI Beta is Live</span>
         </div>
         
-        <h1 className="text-5xl md:text-7xl font-heading font-bold text-white tracking-tight mb-8 animate-fade-in-up animation-delay-200">
+        <h1 className="text-5xl md:text-7xl font-heading font-extrabold text-vuca-navy tracking-tight mb-8 animate-fade-in-up animation-delay-200">
           {t('heroTitle').split('.')[0]}.
           <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-vuca-blue via-blue-400 to-vuca-purple animate-gradient-x">
+          <span className="text-gradient-vuca animate-gradient-x">
             {t('heroTitle').split('.')[1]}
           </span>
         </h1>
         
-        <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-400 mb-10 animate-fade-in-up animation-delay-400">
+        <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500 mb-10 animate-fade-in-up animation-delay-400 font-medium">
           {t('heroSubtitle')}
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animation-delay-600">
           <button 
             onClick={onStart}
-            className="group relative px-8 py-4 bg-vuca-blue rounded-full font-bold text-white shadow-[0_0_40px_rgba(0,71,255,0.4)] hover:shadow-[0_0_60px_rgba(0,71,255,0.6)] transition-all hover:-translate-y-1 overflow-hidden"
+            className="group relative px-8 py-4 bg-vuca-blue rounded-full font-bold text-white shadow-[0_10px_40px_rgba(0,71,255,0.3)] hover:shadow-[0_15px_50px_rgba(0,71,255,0.4)] transition-all hover:-translate-y-1 overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 translate-x-[-200%] group-hover:animate-shine" />
             <span className="relative flex items-center gap-2 text-lg">
@@ -466,7 +495,7 @@ const Hero = ({ onStart }: { onStart: () => void }) => {
             </span>
           </button>
           
-          <button className="px-8 py-4 bg-white/5 border border-white/10 rounded-full font-bold text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+          <button className="px-8 py-4 bg-white border border-gray-200 rounded-full font-bold text-vuca-navy hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center justify-center gap-2 shadow-sm">
             {t('ctaWaitlist')} <ArrowRight size={20} />
           </button>
         </div>
@@ -475,70 +504,119 @@ const Hero = ({ onStart }: { onStart: () => void }) => {
   );
 };
 
+const UseCaseSection = () => {
+  return (
+    <section id="use-case" className="py-24 bg-white relative">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="text-center mb-16 animate-fade-in-up">
+           <h2 className="text-3xl md:text-4xl font-heading font-bold text-vuca-navy mb-4">From Photos to Viral Video</h2>
+           <p className="text-gray-500 text-lg max-w-2xl mx-auto">Create high-converting UGC content without filming a single second.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 items-start relative">
+           {/* Connecting Line */}
+           <div className="hidden md:block absolute top-1/4 left-0 w-full h-1 bg-gradient-to-r from-gray-100 via-vuca-blue/20 to-gray-100 -z-10"></div>
+
+           {/* Step 1 */}
+           <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100 relative group hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
+              <div className="w-full aspect-video bg-gray-100 rounded-xl overflow-hidden mb-6 shadow-sm relative">
+                  <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&q=80" alt="Script Writing" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute top-2 left-2 bg-vuca-blue text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-lg">1</div>
+              </div>
+              <h3 className="text-xl font-bold text-vuca-navy mb-3">Choose Template, AI Script</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">Select from our viral library and let our AI generate a high-converting Hook-Value-CTA script for your product.</p>
+           </div>
+
+           {/* Step 2 */}
+           <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100 relative group hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
+              <div className="w-full aspect-video bg-gray-100 rounded-xl overflow-hidden mb-6 shadow-sm relative">
+                  <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&q=80" alt="Upload Photos" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute top-2 left-2 bg-vuca-blue text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-lg">2</div>
+              </div>
+              <h3 className="text-xl font-bold text-vuca-navy mb-3">Upload Photos & Customize</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">Upload your product photos, choose a template model (or upload your own), and select a professional AI voice.</p>
+           </div>
+
+           {/* Step 3 */}
+           <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100 relative group hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
+              <div className="w-full aspect-video bg-gray-100 rounded-xl overflow-hidden mb-6 shadow-sm relative">
+                   <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=500&q=80" alt="Video Generated" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                   <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                       <div className="w-12 h-12 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white">
+                           <Play fill="white" size={20} />
+                       </div>
+                   </div>
+                   <div className="absolute top-2 left-2 bg-vuca-yellow text-vuca-navy w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-lg">3</div>
+              </div>
+              <h3 className="text-xl font-bold text-vuca-navy mb-3">Video Generated</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">Get a fully edited video with dynamic captions and effects, ready to go viral on TikTok, Reels, or Facebook.</p>
+           </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const SolutionSection = () => {
     const { t } = useAppContext();
     const viralResults = [
         { id: 1, img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80', views: '2.4M', platform: 'TikTok' },
-        { id: 2, img: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=400&q=80', views: '850K', platform: 'YouTube' },
+        { id: 2, img: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=400&q=80', views: '850K', platform: 'Facebook' },
         { id: 3, img: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&q=80', views: '1.1M', platform: 'Instagram' },
         { id: 4, img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80', views: '3.2M', platform: 'TikTok' },
         { id: 5, img: 'https://images.unsplash.com/photo-1593341646261-fa50669169a6?w=400&q=80', views: '500K', platform: 'Instagram' },
-        { id: 6, img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&q=80', views: '1.5M', platform: 'YouTube' },
+        { id: 6, img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&q=80', views: '1.5M', platform: 'Facebook' },
     ];
 
-    // Duplicate array for infinite seamless scroll
     const marqueeItems = [...viralResults, ...viralResults];
 
     return (
-        <section className="py-24 bg-black/20 overflow-hidden relative">
+        <section className="py-24 bg-gray-50/50 overflow-hidden relative border-y border-gray-100">
             <div className="max-w-7xl mx-auto px-4 text-center mb-12 relative z-20">
-                 <h2 className="text-3xl md:text-5xl font-heading font-bold text-white mb-6 animate-fade-in-up">
+                 <h2 className="text-3xl md:text-5xl font-heading font-bold text-vuca-navy mb-6 animate-fade-in-up">
                     Viral Results Across Platforms
                  </h2>
-                 <p className="text-gray-400 max-w-2xl mx-auto text-lg animate-fade-in-up animation-delay-200">
-                    See what creators are generating with Vuca AI. From TikTok trends to YouTube Shorts, our AI creates content that performs.
+                 <p className="text-gray-500 max-w-2xl mx-auto text-lg animate-fade-in-up animation-delay-200">
+                    See what creators are generating with Vuca AI. Our videos are optimized for maximum engagement.
                  </p>
             </div>
             
             <div className="relative w-full py-10">
-                {/* Gradient Masks for Fade Effect */}
-                <div className="absolute left-0 top-0 bottom-0 w-20 md:w-40 bg-gradient-to-r from-[#0A0F1F] via-[#0A0F1F]/80 to-transparent z-10 pointer-events-none"></div>
-                <div className="absolute right-0 top-0 bottom-0 w-20 md:w-40 bg-gradient-to-l from-[#0A0F1F] via-[#0A0F1F]/80 to-transparent z-10 pointer-events-none"></div>
+                <div className="absolute left-0 top-0 bottom-0 w-20 md:w-40 bg-gradient-to-r from-gray-50 via-gray-50/80 to-transparent z-10 pointer-events-none"></div>
+                <div className="absolute right-0 top-0 bottom-0 w-20 md:w-40 bg-gradient-to-l from-gray-50 via-gray-50/80 to-transparent z-10 pointer-events-none"></div>
 
-                {/* Marquee Container */}
                 <div className="flex gap-6 animate-marquee w-max hover:pause">
                     {marqueeItems.map((item, idx) => (
-                        <div key={`${item.id}-${idx}`} className="relative w-[200px] h-[350px] md:w-[240px] md:h-[420px] rounded-2xl overflow-hidden border border-white/10 flex-shrink-0 group transform hover:scale-105 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,71,255,0.3)] hover:border-vuca-blue/50">
-                             <img src={item.img} alt="Viral Content" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
-                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
+                        <div key={`${item.id}-${idx}`} className="relative w-[200px] h-[350px] md:w-[240px] md:h-[420px] rounded-2xl overflow-hidden bg-white shadow-xl flex-shrink-0 group transform transition-all duration-300 border border-gray-100">
+                             <img src={item.img} alt="Viral Content" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000" />
+                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
                              
-                             {/* Stats Overlay */}
+                             {/* Playback Simulation - Progress Bar */}
+                             <div className="absolute bottom-1 left-2 right-2 h-1 bg-white/30 rounded-full overflow-hidden z-30">
+                                <div className="h-full bg-white animate-progress origin-left"></div>
+                             </div>
+
+                             {/* Floating Hearts Animation (Simulated) */}
+                             <div className="absolute bottom-20 right-4 flex flex-col items-center gap-4 z-30">
+                                 <div className="bg-black/40 backdrop-blur-md p-2 rounded-full text-white animate-pulse-slow">
+                                     <Heart fill="#ef4444" className="text-red-500" size={20} />
+                                     <span className="text-[10px] font-bold mt-1 block text-center">12k</span>
+                                 </div>
+                             </div>
+
                              <div className="absolute bottom-4 left-4 right-4 z-20">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-md ${item.platform === 'TikTok' ? 'bg-black border border-gray-700' : item.platform === 'YouTube' ? 'bg-red-600' : 'bg-gradient-to-tr from-yellow-400 to-purple-600'}`}>
-                                        {item.platform === 'TikTok' ? 'TT' : item.platform === 'YouTube' ? <Youtube size={12} /> : <Instagram size={12} />}
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-md ${item.platform === 'TikTok' ? 'bg-black border border-gray-700' : item.platform === 'Facebook' ? 'bg-blue-600' : 'bg-gradient-to-tr from-yellow-400 to-purple-600'}`}>
+                                        {item.platform === 'TikTok' ? 'TT' : item.platform === 'Facebook' ? <Facebook size={12} /> : <Instagram size={12} />}
                                     </div>
-                                    <span className="text-xs font-bold text-gray-300 drop-shadow-md">{item.platform}</span>
+                                    <span className="text-xs font-bold text-white drop-shadow-md">{item.platform}</span>
                                 </div>
                                 <div className="flex justify-between items-end">
                                     <div>
                                         <div className="text-2xl font-bold text-white leading-none drop-shadow-lg">{item.views}</div>
-                                        <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mt-1">Views</div>
-                                    </div>
-                                    <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
-                                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_10px_#4ade80]"></div>
+                                        <div className="text-[10px] text-white/80 uppercase font-bold tracking-wider mt-1">Views</div>
                                     </div>
                                 </div>
-                             </div>
-                             
-                             {/* Floating Elements mimicking UI */}
-                             <div className="absolute top-4 right-4 flex flex-col gap-3 z-20">
-                                 <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/10">
-                                    <Heart size={14} fill="currentColor" className="text-white" />
-                                 </div>
-                                  <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/10">
-                                    <Share2 size={14} />
-                                 </div>
                              </div>
                         </div>
                     ))}
@@ -548,55 +626,131 @@ const SolutionSection = () => {
     )
 }
 
-const HowItWorks = () => {
-    const { t } = useAppContext();
-    return (
-        <section className="py-24 relative">
-             <div className="max-w-7xl mx-auto px-4">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl font-heading font-bold text-white">{t('howItWorksTitle')}</h2>
-                    <p className="text-gray-400">{t('howItWorksSubtitle')}</p>
+const HomePricing = () => {
+  const { t } = useAppContext();
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+
+  const plans = [
+      {
+          id: 'basic',
+          name: 'Basic',
+          price: billingCycle === 'monthly' ? 23 : 18,
+          features: ['15 Videos / Month', '720p Export', 'Basic Templates', 'Standard Support', 'Personal License'],
+          cta: 'Select Basic',
+          highlight: false
+      },
+      {
+          id: 'pro',
+          name: 'Pro',
+          price: billingCycle === 'monthly' ? 49 : 39,
+          features: ['40 Videos / Month', '1080p Export', 'No Watermark', 'Premium Templates', 'Commercial License', 'Priority Support'],
+          cta: 'Select Pro',
+          highlight: true
+      },
+      {
+          id: 'max',
+          name: 'Max',
+          price: 'Custom',
+          features: ['Unlimited Videos', 'API Access', 'Dedicated Account Manager', 'Custom Branding', 'SLA Support', 'Team Access'],
+          cta: 'Talk to Sales',
+          highlight: false
+      }
+  ];
+
+  const handleTalkToSales = () => {
+      window.open('https://wa.me/6285157626264', '_blank');
+  };
+
+  return (
+    <section id="pricing" className="py-24 bg-white relative">
+        <AmbientBackground mode="pricing" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center mb-10">
+                 <h2 className="text-3xl md:text-5xl font-heading font-bold text-vuca-navy mb-4">{t('pricingTitle')}</h2>
+                 <p className="text-gray-500 text-lg max-w-xl mx-auto">{t('pricingSubtitle')}</p>
+            </div>
+            
+            {/* Billing Toggle */}
+            <div className="flex justify-center mb-16">
+                <div className="bg-gray-100 p-1 rounded-full flex items-center relative">
+                    <button 
+                        onClick={() => setBillingCycle('monthly')}
+                        className={`px-6 py-2 rounded-full text-sm font-bold transition-all relative z-10 ${billingCycle === 'monthly' ? 'bg-white text-vuca-navy shadow-sm' : 'text-gray-500'}`}
+                    >
+                        Monthly
+                    </button>
+                    <button 
+                        onClick={() => setBillingCycle('yearly')}
+                        className={`px-6 py-2 rounded-full text-sm font-bold transition-all relative z-10 ${billingCycle === 'yearly' ? 'bg-white text-vuca-navy shadow-sm' : 'text-gray-500'}`}
+                    >
+                        Yearly
+                    </button>
+                    {billingCycle === 'yearly' && (
+                        <div className="absolute -right-20 top-1/2 -translate-y-1/2 bg-green-100 text-green-600 text-[10px] font-bold px-2 py-1 rounded-full animate-bounce">
+                            SAVE 20%
+                        </div>
+                    )}
                 </div>
-                <div className="grid md:grid-cols-3 gap-12">
-                     <div className="relative">
-                         <div className="text-8xl font-bold text-white/5 absolute -top-10 -left-4">1</div>
-                         <h3 className="text-xl font-bold text-white mb-2 relative z-10">Choose Template</h3>
-                         <p className="text-gray-400 relative z-10">Select from our library of high-converting viral templates.</p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                 {plans.map((plan) => (
+                     <div key={plan.id} className={`p-8 rounded-3xl border transition-all hover:-translate-y-2 relative flex flex-col ${plan.highlight ? 'bg-vuca-navy border-vuca-navy shadow-2xl scale-105 z-20 text-white' : 'bg-white border-gray-200 shadow-lg hover:shadow-xl text-vuca-navy'}`}>
+                          {plan.highlight && (
+                              <div className="absolute top-0 right-0 bg-vuca-blue text-white text-xs font-bold px-4 py-1.5 rounded-bl-xl rounded-tr-2xl">POPULAR</div>
+                          )}
+                          <div className={`text-xl font-bold mb-2 ${plan.highlight ? 'text-white' : 'text-vuca-navy'}`}>{plan.name}</div>
+                          <div className={`text-4xl font-bold mb-6 ${plan.highlight ? 'text-white' : 'text-vuca-navy'}`}>
+                              {typeof plan.price === 'number' ? `$${plan.price}` : plan.price}
+                              {typeof plan.price === 'number' && <span className={`text-sm font-normal ${plan.highlight ? 'text-gray-400' : 'text-gray-500'}`}>/mo</span>}
+                          </div>
+                          
+                          <ul className="space-y-4 mb-8 flex-grow">
+                              {plan.features.map((feature, idx) => (
+                                  <li key={idx} className={`flex items-center gap-3 ${plan.highlight ? 'text-gray-300' : 'text-gray-600'}`}>
+                                      <CheckCircle className={plan.highlight ? 'text-vuca-yellow' : 'text-vuca-blue'} size={18} /> 
+                                      <span className={feature.includes('Videos') ? 'font-bold' : ''}>{feature}</span>
+                                  </li>
+                              ))}
+                          </ul>
+                          
+                          <button 
+                            onClick={() => plan.id === 'max' && handleTalkToSales()}
+                            className={`w-full py-3 rounded-xl font-bold transition-colors ${
+                              plan.highlight 
+                              ? 'bg-vuca-blue text-white hover:bg-blue-600 shadow-lg shadow-blue-900/50' 
+                              : plan.id === 'max' 
+                                ? 'bg-vuca-navy text-white hover:bg-gray-800' 
+                                : 'border-2 border-vuca-blue text-vuca-blue hover:bg-vuca-blue hover:text-white'
+                          }`}>
+                              {plan.cta}
+                          </button>
                      </div>
-                     <div className="relative">
-                         <div className="text-8xl font-bold text-white/5 absolute -top-10 -left-4">2</div>
-                         <h3 className="text-xl font-bold text-white mb-2 relative z-10">Input Product</h3>
-                         <p className="text-gray-400 relative z-10">Paste your product URL or description. AI generates the script.</p>
-                     </div>
-                     <div className="relative">
-                         <div className="text-8xl font-bold text-white/5 absolute -top-10 -left-4">3</div>
-                         <h3 className="text-xl font-bold text-white mb-2 relative z-10">Export Video</h3>
-                         <p className="text-gray-400 relative z-10">Get your video with voiceover and captions ready to post.</p>
-                     </div>
-                </div>
-             </div>
-        </section>
-    );
+                 ))}
+            </div>
+        </div>
+    </section>
+  );
 }
 
 const FAQ = () => {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
     return (
-        <section className="py-20 bg-black/20">
+        <section className="py-20 bg-white">
             <div className="max-w-3xl mx-auto px-4">
-                <h2 className="text-3xl font-heading font-bold text-white text-center mb-12">FAQ</h2>
+                <h2 className="text-3xl font-heading font-bold text-vuca-navy text-center mb-12">FAQ</h2>
                 <div className="space-y-4">
                     {FAQ_DATA.map((item, i) => (
-                        <div key={i} className="border border-white/10 rounded-2xl bg-[#0E1529] overflow-hidden">
+                        <div key={i} className="border border-gray-200 rounded-2xl bg-white overflow-hidden shadow-sm">
                             <button 
                                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                                className="w-full text-left px-6 py-4 flex items-center justify-between font-bold text-white"
+                                className="w-full text-left px-6 py-4 flex items-center justify-between font-bold text-vuca-navy hover:text-vuca-blue transition-colors"
                             >
                                 {item.q}
                                 {openIndex === i ? <Minus size={16} /> : <Plus size={16} />}
                             </button>
                             {openIndex === i && (
-                                <div className="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                                <div className="px-6 pb-6 text-gray-500 text-sm leading-relaxed border-t border-gray-100 pt-4">
                                     {item.a}
                                 </div>
                             )}
@@ -610,14 +764,14 @@ const FAQ = () => {
 
 const Footer = () => {
     return (
-        <footer className="border-t border-white/10 py-12 bg-[#050810]">
+        <footer className="border-t border-gray-100 py-12 bg-white">
             <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
-                 <div className="text-2xl font-heading font-bold text-white">VUCA<span className="text-vuca-blue">.AI</span></div>
+                 <div className="text-2xl font-heading font-bold text-vuca-navy">VUCA<span className="text-vuca-blue">.AI</span></div>
                  <div className="text-gray-500 text-sm">© 2024 Vuca AI. All rights reserved.</div>
                  <div className="flex gap-4">
-                     <Twitter className="text-gray-400 hover:text-white cursor-pointer" size={20} />
-                     <Instagram className="text-gray-400 hover:text-white cursor-pointer" size={20} />
-                     <Youtube className="text-gray-400 hover:text-white cursor-pointer" size={20} />
+                     <Twitter className="text-gray-400 hover:text-vuca-blue cursor-pointer" size={20} />
+                     <Instagram className="text-gray-400 hover:text-vuca-blue cursor-pointer" size={20} />
+                     <Youtube className="text-gray-400 hover:text-vuca-blue cursor-pointer" size={20} />
                  </div>
             </div>
         </footer>
@@ -636,25 +790,25 @@ const AuthPage = () => {
     return (
         <div className="min-h-screen pt-20 flex items-center justify-center px-4 relative">
              <AmbientBackground mode="subtle" />
-             <div className="w-full max-w-md bg-[#0E1529] border border-white/10 p-8 rounded-3xl shadow-2xl animate-fade-in-up">
-                 <h2 className="text-2xl font-bold text-white mb-6 text-center">{t('navLogin')}</h2>
+             <div className="w-full max-w-md bg-white border border-gray-100 p-8 rounded-3xl shadow-2xl animate-fade-in-up">
+                 <h2 className="text-2xl font-bold text-vuca-navy mb-6 text-center">{t('navLogin')}</h2>
                  <form onSubmit={handleSubmit} className="space-y-4">
                      <div>
-                         <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Email Address</label>
+                         <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Email Address</label>
                          <input 
                             type="email" 
                             value={email}
                             onChange={e => setEmail(e.target.value)}
-                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-vuca-blue"
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-vuca-blue focus:ring-2 focus:ring-blue-100 transition-all"
                             placeholder="you@example.com"
                             required
                          />
                      </div>
-                     <button type="submit" className="w-full bg-vuca-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors">
+                     <button type="submit" className="w-full bg-vuca-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-blue-500/30">
                          Continue with Email
                      </button>
                  </form>
-                 <div className="mt-6 text-center text-xs text-gray-500">
+                 <div className="mt-6 text-center text-xs text-gray-400">
                      By continuing, you agree to our Terms of Service.
                  </div>
              </div>
@@ -672,27 +826,27 @@ const ProfilePage = () => {
     ];
 
     return (
-        <div className="min-h-screen pt-28 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen pt-28 pb-12 px-4 sm:px-6 lg:px-8 bg-gray-50/50">
             <AmbientBackground mode="subtle" />
             <div className="max-w-4xl mx-auto">
-                <h1 className="text-3xl font-heading font-bold text-white mb-2">My Profile</h1>
-                <p className="text-gray-400 mb-10">Manage your account and connected platforms.</p>
+                <h1 className="text-3xl font-heading font-bold text-vuca-navy mb-2">My Profile</h1>
+                <p className="text-gray-500 mb-10">Manage your account and connected platforms.</p>
 
                 <div className="grid md:grid-cols-3 gap-8">
                     {/* User Info Card */}
                     <div className="md:col-span-1 space-y-6">
-                        <div className="glass-card p-6 rounded-3xl text-center">
-                            <div className="w-24 h-24 mx-auto bg-vuca-blue rounded-full flex items-center justify-center text-4xl font-bold text-white mb-4 ring-4 ring-white/10">
+                        <div className="glass-card p-6 rounded-3xl text-center bg-white border border-gray-100">
+                            <div className="w-24 h-24 mx-auto bg-vuca-blue rounded-full flex items-center justify-center text-4xl font-bold text-white mb-4 ring-4 ring-blue-50">
                                 {user.email?.[0].toUpperCase()}
                             </div>
-                            <h2 className="text-xl font-bold text-white mb-1">{user.email?.split('@')[0]}</h2>
-                            <p className="text-gray-400 text-sm mb-6">{user.email}</p>
+                            <h2 className="text-xl font-bold text-vuca-navy mb-1">{user.email?.split('@')[0]}</h2>
+                            <p className="text-gray-500 text-sm mb-6">{user.email}</p>
                             
-                            <div className="bg-white/5 rounded-xl p-4 text-left">
-                                <div className="text-xs text-gray-500 uppercase mb-1">Current Plan</div>
+                            <div className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
+                                <div className="text-xs text-gray-400 uppercase mb-1">Current Plan</div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-vuca-yellow font-bold uppercase">{user.plan}</span>
-                                    {user.plan === 'free' && <button className="text-xs bg-vuca-blue px-2 py-1 rounded text-white">Upgrade</button>}
+                                    <span className="text-vuca-blue font-bold uppercase">{user.plan}</span>
+                                    {user.plan === 'free' && <button className="text-xs bg-vuca-blue px-2 py-1 rounded text-white shadow-sm">Upgrade</button>}
                                 </div>
                             </div>
                         </div>
@@ -701,11 +855,11 @@ const ProfilePage = () => {
                     {/* Settings & Connections */}
                     <div className="md:col-span-2 space-y-8">
                         {/* Connected Accounts */}
-                        <div className="glass-card p-8 rounded-3xl">
-                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                        <div className="glass-card p-8 rounded-3xl bg-white border border-gray-100">
+                            <h3 className="text-xl font-bold text-vuca-navy mb-6 flex items-center gap-2">
                                 <Share2 size={20} className="text-vuca-blue" /> Connected Accounts
                             </h3>
-                            <p className="text-sm text-gray-400 mb-6">
+                            <p className="text-sm text-gray-500 mb-6">
                                 Connect your social profiles to share videos directly from your dashboard.
                             </p>
                             
@@ -713,13 +867,13 @@ const ProfilePage = () => {
                                 {socialPlatforms.map(platform => {
                                     const isConnected = user.connectedAccounts[platform.id as keyof ConnectedAccounts];
                                     return (
-                                        <div key={platform.id} className="flex items-center justify-between p-4 bg-[#0E1529] border border-white/5 rounded-2xl">
+                                        <div key={platform.id} className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-2xl">
                                             <div className="flex items-center gap-4">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg ${platform.color}`}>
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md ${platform.color}`}>
                                                     {platform.icon}
                                                 </div>
                                                 <div>
-                                                    <div className="font-bold text-white">{platform.name}</div>
+                                                    <div className="font-bold text-vuca-navy">{platform.name}</div>
                                                     <div className="text-xs text-gray-500">{isConnected ? 'Connected' : 'Not connected'}</div>
                                                 </div>
                                             </div>
@@ -727,8 +881,8 @@ const ProfilePage = () => {
                                                 onClick={() => toggleSocialConnection(platform.id as keyof ConnectedAccounts)}
                                                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                                                     isConnected 
-                                                    ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' 
-                                                    : 'bg-white/10 text-white hover:bg-white/20'
+                                                    ? 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-100' 
+                                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200 shadow-sm'
                                                 }`}
                                             >
                                                 {isConnected ? 'Disconnect' : 'Connect'}
@@ -740,8 +894,8 @@ const ProfilePage = () => {
                         </div>
                         
                         {/* API Key Placeholder */}
-                        <div className="glass-card p-8 rounded-3xl opacity-60">
-                            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                        <div className="glass-card p-8 rounded-3xl bg-white border border-gray-100 opacity-60">
+                            <h3 className="text-xl font-bold text-vuca-navy mb-4 flex items-center gap-2">
                                 <Lock size={20} className="text-gray-400" /> API Settings
                             </h3>
                             <p className="text-sm text-gray-500">API Access is available on the Pro plan.</p>
@@ -756,7 +910,7 @@ const ProfilePage = () => {
 const TemplateCard = ({ template, onSelect }: { template: Template; onSelect: (t: Template) => void }) => {
     return (
         <div onClick={() => onSelect(template)} className="group cursor-pointer">
-            <div className="relative aspect-[9/16] rounded-2xl overflow-hidden mb-3 border border-white/5 group-hover:border-vuca-blue/50 transition-all shadow-lg group-hover:shadow-blue-900/20">
+            <div className="relative aspect-[9/16] rounded-2xl overflow-hidden mb-3 border border-gray-100 group-hover:border-vuca-blue/50 transition-all shadow-md group-hover:shadow-xl group-hover:shadow-blue-500/10">
                 <img src={template.thumbnailUrl} alt={template.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                 
@@ -765,64 +919,99 @@ const TemplateCard = ({ template, onSelect }: { template: Template; onSelect: (t
                 </div>
                 
                 <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
-                     <span className="text-[10px] font-bold text-vuca-blue bg-vuca-blue/10 px-2 py-0.5 rounded-full mb-2 inline-block border border-vuca-blue/20">
+                     <span className="text-[10px] font-bold text-white bg-vuca-blue/80 backdrop-blur-sm px-2 py-0.5 rounded-full mb-2 inline-block">
                         {template.category}
                      </span>
-                     <div className="flex items-center gap-2 text-white/90 text-xs">
+                     <div className="flex items-center gap-2 text-white/90 text-xs font-medium">
                         {template.platform === 'TikTok' && <div className="w-4 h-4 rounded-full bg-black flex items-center justify-center font-bold text-[8px] text-white border border-gray-700">TT</div>}
                         {template.platform === 'Instagram' && <Instagram size={14} />}
-                        {template.platform === 'YouTube' && <Youtube size={14} />}
+                        {template.platform === 'Facebook' && <Facebook size={14} />}
                         {template.platform}
                      </div>
                 </div>
                 
                 {/* Overlay Play Button */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/30 transform scale-50 group-hover:scale-100 transition-transform duration-300">
+                    <div className="w-12 h-12 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/50 transform scale-50 group-hover:scale-100 transition-transform duration-300 shadow-lg">
                         <Play size={20} fill="currentColor" className="ml-1" />
                     </div>
                 </div>
             </div>
-            <h3 className="text-white font-bold text-sm leading-tight group-hover:text-vuca-blue transition-colors">{template.title}</h3>
+            <h3 className="text-vuca-navy font-bold text-sm leading-tight group-hover:text-vuca-blue transition-colors">{template.title}</h3>
         </div>
     );
 };
 
 const PricingModal = ({ onClose, onUpgrade }: { onClose: () => void; onUpgrade: (plan: UserPlan) => void }) => {
     const { t } = useAppContext();
+    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
-             <div className="relative w-full max-w-5xl bg-[#0E1529] border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:h-auto">
-                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white z-20"><X size={24} /></button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/80 backdrop-blur-md animate-fade-in">
+             <div className="relative w-full max-w-5xl bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-vuca-navy z-20"><X size={24} /></button>
                  
-                 <div className="p-8 md:p-12 w-full md:w-1/3 bg-gradient-to-br from-vuca-blue/20 to-purple-900/20 relative overflow-hidden">
-                     <div className="relative z-10">
-                         <h2 className="text-3xl font-heading font-bold text-white mb-4">{t('pricingTitle')}</h2>
-                         <p className="text-gray-300 mb-8">{t('pricingSubtitle')}</p>
-                         <ul className="space-y-4">
-                             <li className="flex items-center gap-3 text-white"><CheckCircle className="text-vuca-blue" size={20} /> <span>Unlimited AI Scripts</span></li>
-                             <li className="flex items-center gap-3 text-white"><CheckCircle className="text-vuca-blue" size={20} /> <span>Watermark Removal</span></li>
-                             <li className="flex items-center gap-3 text-white"><CheckCircle className="text-vuca-blue" size={20} /> <span>4K Export Quality</span></li>
-                             <li className="flex items-center gap-3 text-white"><CheckCircle className="text-vuca-blue" size={20} /> <span>Priority Support</span></li>
-                         </ul>
+                 <div className="p-8 bg-gray-50 border-b border-gray-100 flex flex-col items-center">
+                     <h2 className="text-3xl font-heading font-bold text-vuca-navy mb-2">{t('pricingTitle')}</h2>
+                     <p className="text-gray-500 mb-6">{t('pricingSubtitle')}</p>
+                     
+                     <div className="bg-white p-1 rounded-full flex items-center relative border border-gray-200">
+                        <button 
+                            onClick={() => setBillingCycle('monthly')}
+                            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${billingCycle === 'monthly' ? 'bg-vuca-navy text-white shadow-sm' : 'text-gray-500'}`}
+                        >
+                            Monthly
+                        </button>
+                        <button 
+                            onClick={() => setBillingCycle('yearly')}
+                            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${billingCycle === 'yearly' ? 'bg-vuca-navy text-white shadow-sm' : 'text-gray-500'}`}
+                        >
+                            Yearly
+                        </button>
                      </div>
                  </div>
                  
-                 <div className="p-8 md:p-12 w-full md:w-2/3 overflow-y-auto">
-                     <div className="grid md:grid-cols-2 gap-6">
-                         {/* Starter Plan */}
-                         <div className="border border-white/10 rounded-2xl p-6 hover:border-vuca-blue/50 transition-all cursor-pointer group" onClick={() => onUpgrade('starter')}>
-                             <div className="text-xl font-bold text-white mb-2">Starter</div>
-                             <div className="text-3xl font-bold text-white mb-4">$10<span className="text-sm text-gray-400 font-normal">/mo</span></div>
-                             <button className="w-full py-3 rounded-xl border border-white/20 text-white font-bold group-hover:bg-white/5 transition-colors">Choose Starter</button>
+                 <div className="p-8 overflow-y-auto bg-white flex-grow">
+                     <div className="grid md:grid-cols-3 gap-6">
+                         {/* Basic Plan */}
+                         <div className="border border-gray-200 rounded-2xl p-6 hover:border-vuca-blue/50 transition-all cursor-pointer group bg-gray-50 hover:bg-white hover:shadow-xl flex flex-col" onClick={() => onUpgrade('basic')}>
+                             <div className="text-xl font-bold text-vuca-navy mb-2">Basic</div>
+                             <div className="text-3xl font-bold text-vuca-navy mb-4">${billingCycle === 'monthly' ? 23 : 18}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
+                             <ul className="space-y-3 mb-6 flex-grow">
+                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> 15 Videos / Month</li>
+                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> 720p Export</li>
+                             </ul>
+                             <button className="w-full py-3 rounded-xl border border-gray-300 text-vuca-navy font-bold group-hover:border-vuca-blue group-hover:text-vuca-blue transition-colors">Choose Basic</button>
                          </div>
                          
                          {/* Pro Plan */}
-                         <div className="border-2 border-vuca-blue rounded-2xl p-6 relative bg-vuca-blue/5 cursor-pointer transform hover:scale-105 transition-all" onClick={() => onUpgrade('creator')}>
+                         <div className="border-2 border-vuca-blue rounded-2xl p-6 relative bg-white cursor-pointer transform hover:scale-105 transition-all shadow-lg flex flex-col" onClick={() => onUpgrade('pro')}>
                              <div className="absolute top-0 right-0 bg-vuca-blue text-white text-xs font-bold px-3 py-1 rounded-bl-xl">POPULAR</div>
-                             <div className="text-xl font-bold text-white mb-2">Creator</div>
-                             <div className="text-3xl font-bold text-white mb-4">$29<span className="text-sm text-gray-400 font-normal">/mo</span></div>
-                             <button className="w-full py-3 rounded-xl bg-vuca-blue text-white font-bold shadow-lg shadow-blue-900/50">Choose Creator</button>
+                             <div className="text-xl font-bold text-vuca-navy mb-2">Pro</div>
+                             <div className="text-3xl font-bold text-vuca-navy mb-4">${billingCycle === 'monthly' ? 49 : 39}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
+                             <ul className="space-y-3 mb-6 flex-grow">
+                                 <li className="flex items-center gap-2 text-sm text-gray-600 font-bold"><Check size={16} className="text-vuca-blue"/> 40 Videos / Month</li>
+                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> 1080p Export</li>
+                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> No Watermark</li>
+                             </ul>
+                             <button className="w-full py-3 rounded-xl bg-vuca-blue text-white font-bold shadow-lg shadow-blue-500/30">Choose Pro</button>
+                         </div>
+
+                         {/* Max Plan */}
+                         <div className="border border-gray-200 rounded-2xl p-6 transition-all bg-gray-50 flex flex-col">
+                             <div className="text-xl font-bold text-vuca-navy mb-2">Max</div>
+                             <div className="text-3xl font-bold text-vuca-navy mb-4">Custom</div>
+                             <ul className="space-y-3 mb-6 flex-grow">
+                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> Unlimited Videos</li>
+                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> API Access</li>
+                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> Dedicated Manager</li>
+                             </ul>
+                             <button 
+                                onClick={() => window.open('https://wa.me/6285157626264', '_blank')}
+                                className="w-full py-3 rounded-xl bg-vuca-navy text-white font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                             >
+                                <PhoneCall size={16} /> Talk to Sales
+                             </button>
                          </div>
                      </div>
                  </div>
@@ -833,24 +1022,24 @@ const PricingModal = ({ onClose, onUpgrade }: { onClose: () => void; onUpgrade: 
 
 const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
     return (
-        <div className="gradient-border-card rounded-xl overflow-hidden group">
-            <div className="aspect-[9/16] relative bg-gray-800 rounded-xl overflow-hidden">
-                <img src={project.thumbnailUrl} alt={project.templateTitle} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80" />
+        <div className="gradient-border-card rounded-xl overflow-hidden group shadow-md hover:shadow-xl transition-shadow bg-white">
+            <div className="aspect-[9/16] relative bg-gray-100 rounded-xl overflow-hidden">
+                <img src={project.thumbnailUrl} alt={project.templateTitle} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
                 
-                <div className="absolute top-3 right-3 bg-green-500/80 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-white shadow-lg">
+                <div className="absolute top-3 right-3 bg-green-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold shadow-lg">
                     READY
                 </div>
 
                 <div className="absolute bottom-0 left-0 w-full p-4">
-                    <span className="text-[10px] text-gray-400 mb-1 block">{project.createdAt.toLocaleDateString()}</span>
+                    <span className="text-[10px] text-gray-300 mb-1 block">{project.createdAt.toLocaleDateString()}</span>
                     <h3 className="text-white font-heading font-semibold text-sm leading-tight mb-3">{project.templateTitle}</h3>
                     
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
-                        <button className="flex-1 bg-white/10 hover:bg-white/20 text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 backdrop-blur-sm">
+                        <button className="flex-1 bg-white/20 hover:bg-white/30 text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 backdrop-blur-sm">
                             <Download size={12} /> Save
                         </button>
-                        <button className="flex-1 bg-vuca-blue hover:bg-blue-600 text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow-lg shadow-blue-900/50">
+                        <button className="flex-1 bg-vuca-blue hover:bg-blue-600 text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow-lg">
                             <Share2 size={12} /> Share
                         </button>
                     </div>
@@ -888,8 +1077,6 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // ... (handleGenerateScript, handleGenerateImage, handleGenerateAudio, handleFileUpload remain same)
-    
     const handleGenerateScript = async () => {
         if (!prompt) return;
         setLoading(true);
@@ -1073,7 +1260,6 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
         }
     };
     
-    // Determine preview image source
     const currentAvatar = AVATARS.find(a => a.id === selectedAvatar);
     let previewImageSrc = template.thumbnailUrl;
     if (visualMode === 'upload' && uploadedImage) previewImageSrc = uploadedImage;
@@ -1085,65 +1271,64 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
     };
 
     return (
-        <div className="min-h-screen pt-20 flex flex-col md:flex-row bg-[#0A0F1F]">
+        <div className="min-h-screen pt-20 flex flex-col md:flex-row bg-white">
              <AmbientBackground mode="subtle" />
             
             {/* Success Modal Overlay */}
             {showSuccessModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in-up">
-                    <div className="bg-[#0E1529] border border-white/10 p-8 rounded-3xl max-w-md w-full text-center relative overflow-hidden">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/80 backdrop-blur-md animate-fade-in-up">
+                    <div className="bg-white border border-gray-100 p-8 rounded-3xl max-w-md w-full text-center relative overflow-hidden shadow-2xl">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-vuca-blue to-vuca-yellow"></div>
-                        <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-400">
+                        <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500">
                             <CheckCircle size={40} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-2">Video Generated!</h2>
-                        <p className="text-gray-400 mb-8">Your video has been saved to "My Projects".</p>
+                        <h2 className="text-2xl font-bold text-vuca-navy mb-2">Video Generated!</h2>
+                        <p className="text-gray-500 mb-8">Your video has been saved to "My Projects".</p>
                         
                         <div className="grid grid-cols-3 gap-3 mb-8">
                              {['Instagram', 'TikTok', 'Facebook'].map(p => (
                                  <button key={p} onClick={() => handleSocialShare(p)} className="flex flex-col items-center gap-2 group">
-                                     <div className="w-12 h-12 rounded-full bg-white/5 group-hover:bg-vuca-blue group-hover:text-white flex items-center justify-center transition-all border border-white/5">
+                                     <div className="w-12 h-12 rounded-full bg-gray-50 group-hover:bg-vuca-blue group-hover:text-white flex items-center justify-center transition-all border border-gray-100 shadow-sm">
                                          <Share2 size={18} />
                                      </div>
-                                     <span className="text-[10px] text-gray-400 group-hover:text-white uppercase font-bold">{p}</span>
+                                     <span className="text-[10px] text-gray-500 group-hover:text-vuca-navy uppercase font-bold">{p}</span>
                                  </button>
                              ))}
                         </div>
                         
                         <div className="flex gap-3">
-                             <button onClick={() => setShowSuccessModal(false)} className="flex-1 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-colors">Close</button>
-                             <button onClick={onBack} className="flex-1 py-3 bg-vuca-blue hover:bg-blue-600 text-white font-bold rounded-xl transition-colors">Go to Dashboard</button>
+                             <button onClick={() => setShowSuccessModal(false)} className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors">Close</button>
+                             <button onClick={onBack} className="flex-1 py-3 bg-vuca-blue hover:bg-blue-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-blue-500/30">Go to Dashboard</button>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Left Panel: Controls */}
-            <div className="w-full md:w-1/3 border-r border-white/5 p-6 md:p-8 overflow-y-auto z-10 bg-[#0A0F1F]/90 backdrop-blur-xl h-auto md:h-[calc(100vh-80px)]">
-                <button onClick={onBack} className="flex items-center text-gray-400 hover:text-white mb-8 text-sm group transition-colors">
+            <div className="w-full md:w-1/3 border-r border-gray-100 p-6 md:p-8 overflow-y-auto z-10 bg-white/95 backdrop-blur-xl h-auto md:h-[calc(100vh-80px)]">
+                <button onClick={onBack} className="flex items-center text-gray-500 hover:text-vuca-blue mb-8 text-sm group transition-colors">
                     <ChevronRight className="rotate-180 mr-1 group-hover:-translate-x-1 transition-transform" size={16} /> Back to Templates
                 </button>
                 
-                {/* ... (Step logic mostly identical, just ensuring structure is maintained) */}
                  <div className="mb-8">
-                     <span className="text-xs font-bold text-vuca-purple px-2.5 py-1 bg-vuca-purple/10 rounded-full border border-vuca-purple/20">STEP {step} OF 2</span>
-                     <h2 className="text-3xl font-heading font-bold text-white mt-4 mb-2">Create Video</h2>
-                     <p className="text-sm text-gray-500">Template: <span className="text-vuca-yellow font-medium">{template.title}</span></p>
+                     <span className="text-xs font-bold text-vuca-purple px-2.5 py-1 bg-purple-50 rounded-full border border-purple-100">STEP {step} OF 3</span>
+                     <h2 className="text-3xl font-heading font-bold text-vuca-navy mt-4 mb-2">Create Video</h2>
+                     <p className="text-sm text-gray-500">Template: <span className="text-vuca-blue font-medium">{template.title}</span></p>
                 </div>
                 
                  <div className="space-y-6">
                     {step === 1 && (
                         <>
                             <div>
-                                <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-3">
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
                                     {t('productUrl')}
                                 </label>
-                                <div className="gradient-border-card rounded-xl p-[1px]">
+                                <div className="gradient-border-card rounded-xl p-[1px] shadow-sm">
                                     <textarea 
                                         value={prompt}
                                         onChange={(e) => setPrompt(e.target.value)}
                                         placeholder="Example: Review of the new Sony headphones with noise cancellation..."
-                                        className="w-full bg-[#0E1529] rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none min-h-[140px] resize-none block transition-all"
+                                        className="w-full bg-white rounded-xl p-4 text-gray-800 placeholder-gray-400 focus:outline-none min-h-[140px] resize-none block transition-all"
                                     />
                                 </div>
                             </div>
@@ -1152,7 +1337,7 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                 onClick={handleGenerateScript}
                                 disabled={loading || !prompt}
                                 className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg ${
-                                    loading || !prompt ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-vuca-blue hover:bg-blue-600 text-white shadow-blue-900/40 hover:shadow-blue-500/20 hover:-translate-y-1'
+                                    loading || !prompt ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-vuca-blue hover:bg-blue-600 text-white shadow-blue-500/30 hover:-translate-y-1'
                                 }`}
                             >
                                 {loading ? <Loader2 className="animate-spin" /> : <Sparkles size={20} />}
@@ -1163,26 +1348,25 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
 
                     {step >= 2 && (
                          <div className="animate-fade-in-up space-y-8">
-                             {/* ... (Visual Source, Script Editor, Audio & Captions blocks - Same as previous version, abbreviated here for clarity) */}
                              {/* Visual Source Selection */}
                             <div>
-                                <h3 className="text-lg font-bold text-white mb-4">1. Visual Source</h3>
-                                <div className="flex bg-white/5 p-1 rounded-xl mb-4">
+                                <h3 className="text-lg font-bold text-vuca-navy mb-4">1. Visual Source</h3>
+                                <div className="flex bg-gray-100 p-1 rounded-xl mb-4">
                                     <button 
                                         onClick={() => setVisualMode('upload')}
-                                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${visualMode === 'upload' ? 'bg-vuca-blue text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${visualMode === 'upload' ? 'bg-white text-vuca-blue shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                                     >
                                         Upload
                                     </button>
                                     <button 
                                         onClick={() => setVisualMode('avatar')}
-                                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${visualMode === 'avatar' ? 'bg-vuca-blue text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${visualMode === 'avatar' ? 'bg-white text-vuca-blue shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                                     >
-                                        Avatar
+                                        Model
                                     </button>
                                     <button 
                                         onClick={() => setVisualMode('generate')}
-                                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${visualMode === 'generate' ? 'bg-vuca-blue text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${visualMode === 'generate' ? 'bg-white text-vuca-blue shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                                     >
                                         Generate
                                     </button>
@@ -1190,7 +1374,7 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                 {visualMode === 'upload' && (
                                     <div 
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="border-2 border-dashed border-white/10 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-vuca-blue/50 hover:bg-white/5 transition-all group relative overflow-hidden h-32"
+                                        className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-vuca-blue/50 hover:bg-blue-50/50 transition-all group relative overflow-hidden h-32 bg-gray-50"
                                     >
                                         <input 
                                             type="file" 
@@ -1204,16 +1388,16 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                             <>
                                             <img src={uploadedImage} alt="Uploaded" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity" />
                                             <div className="relative z-10 flex flex-col items-center">
-                                                <Upload size={20} className="text-white mb-2" />
-                                                <span className="text-xs font-bold text-white">Change Image</span>
+                                                <Upload size={20} className="text-vuca-navy mb-2" />
+                                                <span className="text-xs font-bold text-vuca-navy">Change Image</span>
                                             </div>
                                             </>
                                         ) : (
                                             <>
-                                                <div className="w-10 h-10 rounded-full bg-vuca-blue/10 text-vuca-blue flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                                <div className="w-10 h-10 rounded-full bg-blue-100 text-vuca-blue flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                                                     <Upload size={20} />
                                                 </div>
-                                                <span className="text-xs font-medium text-gray-300">Upload Product Photo</span>
+                                                <span className="text-xs font-medium text-gray-500">Upload Product Photo</span>
                                             </>
                                         )}
                                     </div>
@@ -1225,11 +1409,11 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                             <div 
                                                 key={avatar.id}
                                                 onClick={() => setSelectedAvatar(avatar.id)}
-                                                className={`relative rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${selectedAvatar === avatar.id ? 'border-vuca-blue shadow-[0_0_15px_rgba(0,71,255,0.4)]' : 'border-transparent hover:border-white/20'}`}
+                                                className={`relative rounded-xl overflow-hidden cursor-pointer border-2 transition-all shadow-sm ${selectedAvatar === avatar.id ? 'border-vuca-blue shadow-md' : 'border-transparent hover:border-gray-200'}`}
                                             >
                                                 <img src={avatar.url} alt={avatar.name} className="w-full h-24 object-cover" />
-                                                <div className="absolute bottom-0 left-0 w-full bg-black/60 backdrop-blur-sm p-1.5 text-center">
-                                                    <span className="text-[10px] font-bold text-white block">{avatar.name}</span>
+                                                <div className="absolute bottom-0 left-0 w-full bg-white/90 backdrop-blur-sm p-1.5 text-center">
+                                                    <span className="text-[10px] font-bold text-vuca-navy block">{avatar.name}</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -1242,20 +1426,20 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                             value={imagePrompt}
                                             onChange={(e) => setImagePrompt(e.target.value)}
                                             placeholder="Describe the image you want (e.g., A cyberpunk product showcase of headphones on a neon table)"
-                                            className="w-full bg-[#0E1529] border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-vuca-blue"
+                                            className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm text-gray-800 focus:outline-none focus:border-vuca-blue shadow-sm"
                                         />
                                         <button 
                                             onClick={handleGenerateImage}
                                             disabled={isGeneratingImage || !imagePrompt}
-                                            className="w-full py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                            className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors"
                                         >
                                             {isGeneratingImage ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
                                             Generate Visual
                                         </button>
                                         {generatedImage && (
-                                            <div className="relative rounded-xl overflow-hidden border border-vuca-blue/50">
+                                            <div className="relative rounded-xl overflow-hidden border border-vuca-blue/50 shadow-md">
                                                 <img src={generatedImage} alt="Generated" className="w-full h-32 object-cover" />
-                                                <div className="absolute top-2 right-2 bg-black/60 px-2 py-1 rounded text-xs text-white">Generated</div>
+                                                <div className="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded text-xs text-vuca-navy font-bold shadow-sm">Generated</div>
                                             </div>
                                         )}
                                     </div>
@@ -1264,19 +1448,19 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
 
                             {/* Script Editor Section */}
                             <div>
-                                <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                                     <Type size={14} /> 2. Edit Script
                                 </label>
                                 <textarea 
                                     value={script}
                                     onChange={(e) => setScript(e.target.value)}
-                                    className="w-full bg-[#0E1529] border border-white/10 rounded-xl p-4 text-gray-300 text-sm leading-relaxed font-mono shadow-inner focus:outline-none focus:border-vuca-blue/50 transition-colors min-h-[120px]"
+                                    className="w-full bg-white border border-gray-200 rounded-xl p-4 text-gray-700 text-sm leading-relaxed font-mono shadow-inner focus:outline-none focus:border-vuca-blue transition-colors min-h-[120px]"
                                 />
                             </div>
 
                             {/* Audio & Subtitles */}
-                            <div className="border-t border-white/10 pt-6 space-y-6">
-                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                            <div className="border-t border-gray-100 pt-6 space-y-6">
+                                <h3 className="text-lg font-bold text-vuca-navy flex items-center gap-2">
                                     3. Audio & Captions
                                 </h3>
                                 <div className="space-y-4">
@@ -1288,20 +1472,20 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                                 <select 
                                                     value={selectedVoice}
                                                     onChange={(e) => setSelectedVoice(e.target.value)}
-                                                    className="w-full appearance-none bg-[#0E1529] border border-white/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-vuca-blue cursor-pointer hover:bg-white/5"
+                                                    className="w-full appearance-none bg-white border border-gray-200 text-gray-700 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-vuca-blue cursor-pointer hover:bg-gray-50 shadow-sm"
                                                 >
                                                     {VOICES.filter(v => v.lang === lang).map(voice => (
                                                         <option key={voice.id} value={voice.id}>{voice.name}</option>
                                                     ))}
                                                 </select>
-                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                                                     <ChevronRight className="rotate-90" size={14} />
                                                 </div>
                                             </div>
                                             <button 
                                                 onClick={handleGenerateAudio}
                                                 disabled={isGeneratingAudio}
-                                                className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-xl transition-colors flex items-center justify-center tooltip-trigger"
+                                                className="bg-gray-100 hover:bg-gray-200 text-gray-600 p-3 rounded-xl transition-colors flex items-center justify-center tooltip-trigger shadow-sm"
                                                 title="Preview Voice"
                                             >
                                                 {isGeneratingAudio ? <Loader2 className="animate-spin" size={20} /> : <Volume2 size={20} />}
@@ -1311,14 +1495,14 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                     {/* Subtitle Toggle */}
                                     <div 
                                         onClick={() => setHasSubtitles(!hasSubtitles)}
-                                        className="bg-[#0E1529] border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
+                                        className="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors shadow-sm"
                                     >
                                         <div className="flex items-center gap-3">
                                             <Type size={18} className="text-gray-400" />
-                                            <span className="text-sm text-white font-medium">Auto-Captions</span>
+                                            <span className="text-sm text-gray-700 font-medium">Auto-Captions</span>
                                         </div>
-                                        <div className={`w-10 h-5 rounded-full relative transition-colors ${hasSubtitles ? 'bg-vuca-blue' : 'bg-gray-700'}`}>
-                                            <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${hasSubtitles ? 'left-6' : 'left-1'}`} />
+                                        <div className={`w-10 h-5 rounded-full relative transition-colors ${hasSubtitles ? 'bg-vuca-blue' : 'bg-gray-300'}`}>
+                                            <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${hasSubtitles ? 'left-6' : 'left-1'}`} />
                                         </div>
                                     </div>
                                 </div>
@@ -1328,11 +1512,11 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                 <button 
                                     onClick={handleGenerateVideo} 
                                     disabled={isGeneratingVideo}
-                                    className="w-full py-4 bg-vuca-yellow text-vuca-navy font-bold text-lg rounded-xl hover:bg-yellow-400 transition-all shadow-lg shadow-yellow-900/20 flex items-center justify-center gap-2 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full py-4 bg-vuca-yellow text-vuca-navy font-bold text-lg rounded-xl hover:bg-yellow-400 transition-all shadow-lg shadow-yellow-500/30 flex items-center justify-center gap-2 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isGeneratingVideo ? <><Loader2 className="animate-spin" /> Generating Video...</> : <>Export Video <ChevronRight size={18}/></>}
                                 </button>
-                                <button onClick={() => setStep(1)} className="w-full py-3 text-gray-400 text-sm hover:text-white transition-colors">Start Over</button>
+                                <button onClick={() => setStep(1)} className="w-full py-3 text-gray-400 text-sm hover:text-vuca-navy transition-colors">Start Over</button>
                             </div>
                          </div>
                     )}
@@ -1340,11 +1524,11 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
             </div>
 
             {/* Right Panel: Preview */}
-            <div className="flex-1 flex items-center justify-center relative overflow-hidden bg-black/50 backdrop-blur-sm p-4 md:p-8 min-h-[600px] md:min-h-[calc(100vh-80px)]">
+            <div className="flex-1 flex items-center justify-center relative overflow-hidden bg-gray-100 p-4 md:p-8 min-h-[600px] md:min-h-[calc(100vh-80px)]">
                 {/* Phone Frame */}
-                <div className="relative w-[300px] h-[600px] md:w-[340px] md:h-[680px] border-[10px] md:border-[12px] border-[#1a1a1a] rounded-[3rem] md:rounded-[3.5rem] bg-gray-900 overflow-hidden shadow-2xl ring-1 ring-white/10 transform transition-transform">
+                <div className="relative w-[300px] h-[600px] md:w-[340px] md:h-[680px] border-[10px] md:border-[12px] border-white rounded-[3rem] md:rounded-[3.5rem] bg-black overflow-hidden shadow-2xl ring-1 ring-gray-200 transform transition-transform">
                      {/* ... (Same preview logic) */}
-                    <div className="absolute top-0 w-full h-8 bg-[#1a1a1a] flex justify-center z-20 rounded-b-xl">
+                    <div className="absolute top-0 w-full h-8 bg-black flex justify-center z-20 rounded-b-xl">
                         <div className="w-16 md:w-20 h-5 bg-black rounded-b-xl"></div>
                     </div>
 
@@ -1418,31 +1602,31 @@ const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => vo
     });
 
     return (
-        <div className="min-h-screen pt-20 pb-12">
+        <div className="min-h-screen pt-20 pb-12 bg-white">
             <AmbientBackground mode="dashboard" />
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Dashboard Header */}
                 <div className="mb-8 animate-fade-in-up">
-                    <h1 className="text-3xl md:text-4xl font-heading font-bold text-white mb-2">{t('dashboardTitle')}</h1>
-                    <p className="text-gray-400">Welcome back, <span className="text-white font-bold">{user.email?.split('@')[0]}</span>. Create your next viral hit.</p>
+                    <h1 className="text-3xl md:text-4xl font-heading font-bold text-vuca-navy mb-2">{t('dashboardTitle')}</h1>
+                    <p className="text-gray-500">Welcome back, <span className="text-vuca-blue font-bold">{user.email?.split('@')[0]}</span>. Create your next viral hit.</p>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-6 border-b border-white/10 mb-8">
+                <div className="flex gap-6 border-b border-gray-100 mb-8">
                     <button 
                         onClick={() => setActiveTab('explore')}
-                        className={`pb-4 px-2 font-bold text-sm transition-all relative ${activeTab === 'explore' ? 'text-vuca-blue' : 'text-gray-400 hover:text-white'}`}
+                        className={`pb-4 px-2 font-bold text-sm transition-all relative ${activeTab === 'explore' ? 'text-vuca-blue' : 'text-gray-500 hover:text-vuca-navy'}`}
                     >
                         Explore Templates
                         {activeTab === 'explore' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-vuca-blue rounded-full"></div>}
                     </button>
                     <button 
                         onClick={() => setActiveTab('projects')}
-                        className={`pb-4 px-2 font-bold text-sm transition-all relative flex items-center gap-2 ${activeTab === 'projects' ? 'text-vuca-blue' : 'text-gray-400 hover:text-white'}`}
+                        className={`pb-4 px-2 font-bold text-sm transition-all relative flex items-center gap-2 ${activeTab === 'projects' ? 'text-vuca-blue' : 'text-gray-500 hover:text-vuca-navy'}`}
                     >
                         My Projects
-                        <span className="bg-white/10 text-xs px-2 py-0.5 rounded-full">{projects.length}</span>
+                        <span className="bg-gray-100 text-xs px-2 py-0.5 rounded-full text-gray-600">{projects.length}</span>
                         {activeTab === 'projects' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-vuca-blue rounded-full"></div>}
                     </button>
                 </div>
@@ -1458,7 +1642,7 @@ const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => vo
                                     placeholder={t('searchPlaceholder')}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-[#0E1529] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-vuca-blue shadow-lg transition-all"
+                                    className="w-full bg-white border border-gray-100 rounded-xl py-4 pl-12 pr-4 text-gray-800 focus:outline-none focus:border-vuca-blue shadow-lg shadow-gray-200/50 transition-all"
                                 />
                             </div>
                             
@@ -1469,8 +1653,8 @@ const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => vo
                                         onClick={() => setSelectedCategory(cat)}
                                         className={`px-5 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all border ${
                                             selectedCategory === cat 
-                                            ? 'bg-vuca-blue text-white border-vuca-blue shadow-lg shadow-blue-900/30' 
-                                            : 'bg-[#0E1529] text-gray-400 border-white/10 hover:text-white hover:border-white/20'
+                                            ? 'bg-vuca-blue text-white border-vuca-blue shadow-md shadow-blue-500/20' 
+                                            : 'bg-white text-gray-500 border-gray-100 hover:text-vuca-navy hover:border-gray-200'
                                         }`}
                                     >
                                         {cat}
@@ -1488,11 +1672,11 @@ const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => vo
                             </div>
                         ) : (
                             <div className="text-center py-20 animate-fade-in-up">
-                                <div className="inline-block p-4 rounded-full bg-white/5 mb-4">
-                                    <Search size={32} className="text-gray-500" />
+                                <div className="inline-block p-4 rounded-full bg-gray-50 mb-4 border border-gray-100">
+                                    <Search size={32} className="text-gray-400" />
                                 </div>
-                                <h3 className="text-xl font-bold text-white mb-2">No templates found</h3>
-                                <p className="text-gray-400">Try adjusting your search or category filter.</p>
+                                <h3 className="text-xl font-bold text-vuca-navy mb-2">No templates found</h3>
+                                <p className="text-gray-500">Try adjusting your search or category filter.</p>
                                 <button 
                                     onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }}
                                     className="mt-6 text-vuca-blue font-bold hover:underline"
@@ -1512,15 +1696,15 @@ const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => vo
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
-                                <div className="inline-block p-4 rounded-full bg-[#0E1529] mb-4">
-                                    <Film size={32} className="text-gray-500" />
+                            <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                                <div className="inline-block p-4 rounded-full bg-white mb-4 border border-gray-100 shadow-sm">
+                                    <Film size={32} className="text-gray-400" />
                                 </div>
-                                <h3 className="text-xl font-bold text-white mb-2">No projects yet</h3>
-                                <p className="text-gray-400 mb-6">Create your first video to start building your library.</p>
+                                <h3 className="text-xl font-bold text-vuca-navy mb-2">No projects yet</h3>
+                                <p className="text-gray-500 mb-6">Create your first video to start building your library.</p>
                                 <button 
                                     onClick={() => setActiveTab('explore')}
-                                    className="bg-vuca-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-600 transition-colors"
+                                    className="bg-vuca-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/30"
                                 >
                                     Create New Video
                                 </button>
@@ -1584,7 +1768,7 @@ const App = () => {
 
   return (
     <AppContext.Provider value={{ lang, setLang, t, user, login, logout, upgradePlan, toggleSocialConnection, showPricingModal, setShowPricingModal, projects, addProject }}>
-      <div className="min-h-screen font-sans text-gray-100 bg-[#0A0F1F]">
+      <div className="min-h-screen font-sans text-vuca-navy bg-white">
         <Navbar onViewChange={setView} />
         
         <main>
@@ -1592,7 +1776,8 @@ const App = () => {
             <>
                 <Hero onStart={() => setView('auth')} />
                 <SolutionSection />
-                <HowItWorks />
+                <UseCaseSection />
+                <HomePricing />
                 <FAQ />
                 <Footer />
             </>
