@@ -468,8 +468,8 @@ const Hero = ({ onStart }: { onStart: () => void }) => {
       <AmbientBackground mode="hero" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm mb-8 animate-fade-in-up">
-           <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-           <span className="text-xs font-semibold text-gray-600">Vuca AI Beta is Live</span>
+           <span className="flex h-2 w-2 rounded-full bg-vuca-blue animate-pulse"></span>
+           <span className="text-xs font-semibold text-gray-600">Vuca AI: The Solution to Your Content Scaling Problems</span>
         </div>
         
         <h1 className="text-5xl md:text-7xl font-heading font-extrabold text-vuca-navy tracking-tight mb-8 animate-fade-in-up animation-delay-200">
@@ -493,10 +493,6 @@ const Hero = ({ onStart }: { onStart: () => void }) => {
             <span className="relative flex items-center gap-2 text-lg">
               {t('ctaStart')} <Zap size={20} fill="currentColor" />
             </span>
-          </button>
-          
-          <button className="px-8 py-4 bg-white border border-gray-200 rounded-full font-bold text-vuca-navy hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center justify-center gap-2 shadow-sm">
-            {t('ctaWaitlist')} <ArrowRight size={20} />
           </button>
         </div>
       </div>
