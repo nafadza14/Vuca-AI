@@ -1075,12 +1075,19 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
 
     const handleGenerateScript = async () => {
         if (!prompt) return;
+
+        const apiKey = import.meta.env.VITE_API_KEY;
+        if (!apiKey) {
+             alert("Configuration Error: VITE_API_KEY is missing. Please add your Gemini API Key in Vercel Environment Variables.");
+             return;
+        }
+
         setLoading(true);
         try {
             // Use Vite env variable
-            const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+            const ai = new GoogleGenAI({ apiKey });
             const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+                model: 'gemini-2.5-flash', // Switched to 2.5 Flash for better reliability
                 contents: `Write a short, engaging video script (under 60 seconds) for a ${template.platform} video about: "${prompt}". 
                 The category is ${template.category}.
                 Tone: Friendly, Simple, Confident.
@@ -1097,9 +1104,9 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
             } else {
                  alert("AI generated empty response. Please try again.");
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error("Script generation error:", e);
-            alert("Error generating script. Please check your connection or try again.");
+            alert(`Error generating script: ${e.message || "Please check your connection."}`);
         } finally {
             setLoading(false);
         }
@@ -1107,9 +1114,16 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
 
     const handleGenerateImage = async () => {
         if (!imagePrompt) return;
+        
+        const apiKey = import.meta.env.VITE_API_KEY;
+        if (!apiKey) {
+             alert("Configuration Error: VITE_API_KEY is missing. Please add your Gemini API Key in Vercel Environment Variables.");
+             return;
+        }
+
         setIsGeneratingImage(true);
         try {
-            const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+            const ai = new GoogleGenAI({ apiKey });
             const response = await ai.models.generateContent({
                 model: 'gemini-3-pro-image-preview',
                 contents: { parts: [{ text: imagePrompt }] },
@@ -1128,18 +1142,24 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
 
             if (foundImage) setGeneratedImage(foundImage);
             else alert("No image generated. Please try a different prompt.");
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            alert("Image generation failed. Please try again.");
+             alert(`Image generation failed: ${e.message || "Unknown error"}`);
         } finally {
             setIsGeneratingImage(false);
         }
     };
 
     const handleGenerateAudio = async () => {
+        const apiKey = import.meta.env.VITE_API_KEY;
+        if (!apiKey) {
+             alert("Configuration Error: VITE_API_KEY is missing. Please add your Gemini API Key in Vercel Environment Variables.");
+             return;
+        }
+
         setIsGeneratingAudio(true);
         try {
-             const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+             const ai = new GoogleGenAI({ apiKey });
              const response = await ai.models.generateContent({
                   model: "gemini-2.5-flash-preview-tts",
                   contents: [{ parts: [{ text: script.substring(0, 300) }] }],
@@ -1183,10 +1203,21 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
         if (!await (window as any).aistudio.hasSelectedApiKey()) {
              await (window as any).aistudio.openSelectKey();
         }
+        
+        // Note: For video generation using Veo models, we still need the main client initialized
+        // However, aistudio.openSelectKey handles its own auth context for the billing check.
+        // The actual API call below needs the VITE_API_KEY or the key from the select dialog if we were using it for everything.
+        // Currently we use VITE_API_KEY for the ai client.
+
+        const apiKey = import.meta.env.VITE_API_KEY;
+        if (!apiKey) {
+             alert("Configuration Error: VITE_API_KEY is missing.");
+             return;
+        }
 
         setIsGeneratingVideo(true);
         try {
-            const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+            const ai = new GoogleGenAI({ apiKey });
             
             let sourceImageBase64 = '';
             let thumbUrl = template.thumbnailUrl;
@@ -1232,7 +1263,7 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
 
             const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
             if (downloadLink) {
-                 const finalVideoUrl = `${downloadLink}&key=${import.meta.env.VITE_API_KEY}`;
+                 const finalVideoUrl = `${downloadLink}&key=${apiKey}`;
                  setGeneratedVideoUrl(finalVideoUrl);
                  
                  // Save to My Projects
@@ -1552,7 +1583,7 @@ const Editor = ({ template, onBack }: { template: Template; onBack: () => void }
                                     {hasSubtitles && step >= 2 && (
                                          <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-md border border-white/10 inline-flex items-center gap-1">
                                              <Type size={10} className="text-vuca-yellow"/>
-                                             <span className="text-[10px] font-bold text-white uppercase tracking-wider">CC On</span>
+                                             <span className="text-xs font-bold text-white uppercase tracking-wider">CC On</span>
                                          </div>
                                     )}
                                  </div>
