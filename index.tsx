@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GoogleGenAI, Modality } from "@google/genai";
@@ -48,7 +49,16 @@ import {
   Heart,
   Layers,
   Smartphone,
-  PhoneCall
+  PhoneCall,
+  Box,
+  ScanFace,
+  HandMetal,
+  TrendingUp,
+  Clock,
+  DollarSign,
+  Smile,
+  Aperture,
+  Camera
 } from 'lucide-react';
 
 // --- Types & Interfaces ---
@@ -102,7 +112,7 @@ const TRANSLATIONS: Translation = {
     id: "Gabung Waitlist Beta"
   },
   navHome: { en: "Home", id: "Beranda" },
-  navUseCase: { en: "Use Case", id: "Kegunaan" },
+  navUseCase: { en: "Features", id: "Fitur" },
   navPricing: { en: "Pricing", id: "Harga" },
   navTemplates: { en: "Templates", id: "Templat" },
   navLogin: { en: "Login", id: "Masuk" },
@@ -172,6 +182,7 @@ interface UserState {
   email: string | null;
   plan: UserPlan;
   connectedAccounts: ConnectedAccounts;
+  hasOnboarded: boolean;
 }
 
 interface AppContextType {
@@ -183,6 +194,7 @@ interface AppContextType {
   logout: () => void;
   upgradePlan: (plan: UserPlan) => void;
   toggleSocialConnection: (platform: keyof ConnectedAccounts) => void;
+  completeOnboarding: () => void;
   showPricingModal: boolean;
   setShowPricingModal: (show: boolean) => void;
   projects: Project[];
@@ -197,12 +209,14 @@ const AppContext = createContext<AppContextType>({
     isLoggedIn: false, 
     email: null, 
     plan: 'free',
-    connectedAccounts: { instagram: false, tiktok: false, facebook: false, youtube: false } 
+    connectedAccounts: { instagram: false, tiktok: false, facebook: false, youtube: false },
+    hasOnboarded: false
   },
   login: () => {},
   logout: () => {},
   upgradePlan: () => {},
   toggleSocialConnection: () => {},
+  completeOnboarding: () => {},
   showPricingModal: false,
   setShowPricingModal: () => {},
   projects: [],
@@ -502,117 +516,189 @@ const Hero = ({ onStart }: { onStart: () => void }) => {
 
 const UseCaseSection = () => {
   return (
-    <section id="use-case" className="py-24 bg-white relative">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-16 animate-fade-in-up">
-           <h2 className="text-3xl md:text-4xl font-heading font-bold text-vuca-navy mb-4">From Photos to Viral Video</h2>
-           <p className="text-gray-500 text-lg max-w-2xl mx-auto">Create high-converting UGC content without filming a single second.</p>
+    <section id="use-case" className="py-24 bg-gray-50/30">
+        <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-16 animate-fade-in-up">
+                <div className="inline-block px-3 py-1 bg-blue-50 text-vuca-blue text-xs font-bold rounded-full mb-6">Built-in tools</div>
+                <h2 className="text-4xl md:text-5xl font-heading font-bold text-vuca-navy mb-4">Everything you need to create</h2>
+                <p className="text-gray-500 text-lg max-w-2xl mx-auto">Explore Vuca's main creation tools: simple, fast, and ready for scale.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-6 grid-rows-[auto_auto]">
+                
+                {/* Talking Actors */}
+                <div className="md:col-span-3 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-all relative overflow-hidden group h-[340px]">
+                    <div className="relative z-10 h-full flex flex-col justify-between">
+                        <div>
+                             <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-vuca-blue mb-4">
+                                 <Mic size={24} />
+                             </div>
+                             <h3 className="text-2xl font-bold text-vuca-navy mb-2">Talking Actors</h3>
+                             <p className="text-gray-500 text-sm max-w-xs">Realistic AI actors perform your script with natural expression and voice.</p>
+                        </div>
+                    </div>
+                     <div className="absolute top-8 right-[-20px] w-48 h-64 bg-gray-100 rounded-xl transform rotate-6 border border-gray-200 overflow-hidden shadow-lg group-hover:rotate-0 transition-transform duration-500">
+                        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&q=80" alt="Actor" className="w-full h-full object-cover" />
+                    </div>
+                </div>
+
+                {/* B-roll */}
+                <div className="md:col-span-3 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-all relative overflow-hidden group h-[340px]">
+                     <div className="relative z-10 h-full flex flex-col justify-between">
+                         <div>
+                             <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-green-600 mb-4">
+                                 <Film size={24} />
+                             </div>
+                             <h3 className="text-2xl font-bold text-vuca-navy mb-2">Smart B-roll</h3>
+                             <p className="text-gray-500 text-sm max-w-xs">Generate cinematic background footage or motion scenes that match your story.</p>
+                         </div>
+                     </div>
+                     <div className="absolute top-10 right-10 w-40 h-40 bg-gray-100 rounded-2xl transform rotate-[-12deg] border border-gray-200 overflow-hidden shadow-lg group-hover:rotate-0 transition-transform duration-500">
+                         <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=500&q=80" alt="B-roll" className="w-full h-full object-cover" />
+                     </div>
+                </div>
+
+                {/* Custom AI Avatar */}
+                <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-all relative overflow-hidden group h-[400px]">
+                     <div className="relative z-10">
+                         <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 mb-4">
+                             <ScanFace size={24} />
+                         </div>
+                         <h3 className="text-xl font-bold text-vuca-navy mb-2">Custom AI Avatar</h3>
+                         <p className="text-gray-500 text-sm mb-6">Bring lifelike digital avatars into your videos — fully customizable and brand-ready.</p>
+                     </div>
+                     <div className="absolute bottom-[-20px] right-[-20px] left-[-20px]">
+                          <div className="grid grid-cols-2 gap-2 p-6">
+                              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" className="rounded-xl border border-white shadow-sm transform translate-y-4" alt="Avatar 1" />
+                              <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80" className="rounded-xl border border-white shadow-sm transform -translate-y-4" alt="Avatar 2" />
+                          </div>
+                     </div>
+                </div>
+
+                {/* Product in Hand */}
+                <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-all relative overflow-hidden group h-[400px]">
+                     <div className="relative z-10">
+                         <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 mb-4">
+                             <Box size={24} />
+                         </div>
+                         <h3 className="text-xl font-bold text-vuca-navy mb-2">Product in Hand</h3>
+                         <p className="text-gray-500 text-sm mb-6">Turn one image into a realistic demo where the creator naturally holds your product.</p>
+                     </div>
+                     <div className="absolute bottom-0 right-0 w-3/4 h-1/2">
+                          <img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?w=400&q=80" className="w-full h-full object-cover rounded-tl-2xl border-t border-l border-gray-100" alt="Product Demo" />
+                     </div>
+                </div>
+
+                {/* Gestures */}
+                <div className="md:col-span-2 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-all relative overflow-hidden group h-[400px]">
+                     <div className="relative z-10">
+                         <div className="flex items-center gap-2 mb-4">
+                             <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-red-500">
+                                 <HandMetal size={24} />
+                             </div>
+                             <span className="bg-vuca-blue text-white text-[10px] font-bold px-2 py-1 rounded-full">NEW</span>
+                         </div>
+                         <h3 className="text-xl font-bold text-vuca-navy mb-2">Gestures</h3>
+                         <p className="text-gray-500 text-sm mb-6">Add expressive body and face movements that make it feel human and dynamic.</p>
+                     </div>
+                     <div className="absolute bottom-0 right-0 left-0 h-1/2 overflow-hidden flex justify-center items-end">
+                         <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80" className="h-full object-cover w-full opacity-80" alt="Gestures" />
+                     </div>
+                </div>
+
+            </div>
         </div>
-
-        <div className="grid md:grid-cols-3 gap-8 items-start relative">
-           {/* Connecting Line */}
-           <div className="hidden md:block absolute top-1/4 left-0 w-full h-1 bg-gradient-to-r from-gray-100 via-vuca-blue/20 to-gray-100 -z-10"></div>
-
-           {/* Step 1 */}
-           <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100 relative group hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
-              <div className="w-full aspect-video bg-gray-100 rounded-xl overflow-hidden mb-6 shadow-sm relative">
-                  <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&q=80" alt="Script Writing" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute top-2 left-2 bg-vuca-blue text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-lg">1</div>
-              </div>
-              <h3 className="text-xl font-bold text-vuca-navy mb-3">Choose Template, AI Script</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">Select from our viral library and let our AI generate a high-converting Hook-Value-CTA script for your product.</p>
-           </div>
-
-           {/* Step 2 */}
-           <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100 relative group hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
-              <div className="w-full aspect-video bg-gray-100 rounded-xl overflow-hidden mb-6 shadow-sm relative">
-                  <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&q=80" alt="Upload Photos" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute top-2 left-2 bg-vuca-blue text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-lg">2</div>
-              </div>
-              <h3 className="text-xl font-bold text-vuca-navy mb-3">Upload Photos & Customize</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">Upload your product photos, choose a template model (or upload your own), and select a professional AI voice.</p>
-           </div>
-
-           {/* Step 3 */}
-           <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100 relative group hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
-              <div className="w-full aspect-video bg-gray-100 rounded-xl overflow-hidden mb-6 shadow-sm relative">
-                   <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=500&q=80" alt="Video Generated" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
-                   <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                       <div className="w-12 h-12 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white">
-                           <Play fill="white" size={20} />
-                       </div>
-                   </div>
-                   <div className="absolute top-2 left-2 bg-vuca-yellow text-vuca-navy w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-lg">3</div>
-              </div>
-              <h3 className="text-xl font-bold text-vuca-navy mb-3">Video Generated</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">Get a fully edited video with dynamic captions and effects, ready to go viral on TikTok, Reels, or Facebook.</p>
-           </div>
-        </div>
-      </div>
     </section>
   );
 };
 
 const SolutionSection = () => {
     const { t } = useAppContext();
-    const viralResults = [
-        { id: 1, img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80', views: '2.4M', platform: 'TikTok' },
-        { id: 2, img: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=400&q=80', views: '850K', platform: 'Facebook' },
-        { id: 3, img: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&q=80', views: '1.1M', platform: 'Instagram' },
-        { id: 4, img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80', views: '3.2M', platform: 'TikTok' },
-        { id: 5, img: 'https://images.unsplash.com/photo-1593341646261-fa50669169a6?w=400&q=80', views: '500K', platform: 'Instagram' },
-        { id: 6, img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&q=80', views: '1.5M', platform: 'Facebook' },
+    
+    // Updated data to look like mobile screenshots / templates gallery
+    const viralTemplates = [
+        { id: 1, img: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=500&q=80', title: "Politeness Check", type: "Quiz", views: '2.4M', badge: "Trending" },
+        { id: 2, img: 'https://images.unsplash.com/photo-1596462502278-27bfdd403348?w=500&q=80', title: "Tinder Dating App", type: "App Demo", views: '850K', badge: "New" },
+        { id: 3, img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80', title: "Viral Reaction", type: "Reaction", views: '1.1M', badge: "Popular" },
+        { id: 4, img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&q=80', title: "Unboxing Tech", type: "Unboxing", views: '3.2M', badge: "Hot" },
+        { id: 5, img: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=500&q=80', title: "Daily Routine", type: "Vlog", views: '500K', badge: "Classic" },
     ];
 
-    const marqueeItems = [...viralResults, ...viralResults];
-
     return (
-        <section className="py-24 bg-gray-50/50 overflow-hidden relative border-y border-gray-100">
+        <section className="py-24 bg-white overflow-hidden relative border-y border-gray-100">
             <div className="max-w-7xl mx-auto px-4 text-center mb-12 relative z-20">
                  <h2 className="text-3xl md:text-5xl font-heading font-bold text-vuca-navy mb-6 animate-fade-in-up">
-                    Viral Results Across Platforms
+                    Viral Video Templates
                  </h2>
                  <p className="text-gray-500 max-w-2xl mx-auto text-lg animate-fade-in-up animation-delay-200">
-                    See what creators are generating with Vuca AI. Our videos are optimized for maximum engagement.
+                    High-performing templates modeled after viral hits. Select one, customize, and go viral.
                  </p>
             </div>
             
             <div className="relative w-full py-10">
-                <div className="absolute left-0 top-0 bottom-0 w-20 md:w-40 bg-gradient-to-r from-gray-50 via-gray-50/80 to-transparent z-10 pointer-events-none"></div>
-                <div className="absolute right-0 top-0 bottom-0 w-20 md:w-40 bg-gradient-to-l from-gray-50 via-gray-50/80 to-transparent z-10 pointer-events-none"></div>
-
-                <div className="flex gap-6 animate-marquee w-max hover:pause">
-                    {marqueeItems.map((item, idx) => (
-                        <div key={`${item.id}-${idx}`} className="relative w-[200px] h-[350px] md:w-[240px] md:h-[420px] rounded-2xl overflow-hidden bg-white shadow-xl flex-shrink-0 group transform transition-all duration-300 border border-gray-100">
-                             <img src={item.img} alt="Viral Content" className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000" />
-                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
+                {/* Marquee Container */}
+                <div className="flex gap-8 animate-marquee w-max hover:pause px-4">
+                    {[...viralTemplates, ...viralTemplates].map((item, idx) => (
+                        <div key={`${item.id}-${idx}`} className="relative w-[300px] h-[550px] rounded-[2.5rem] overflow-hidden bg-gray-900 shadow-2xl flex-shrink-0 group transform transition-all duration-300 border-[8px] border-white ring-1 ring-gray-200">
                              
-                             {/* Playback Simulation - Progress Bar */}
-                             <div className="absolute bottom-1 left-2 right-2 h-1 bg-white/30 rounded-full overflow-hidden z-30">
+                             {/* Background Image */}
+                             <img src={item.img} alt={item.title} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
+                             
+                             {/* Gradient Overlay */}
+                             <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/80"></div>
+                             
+                             {/* UI Header */}
+                             <div className="absolute top-6 left-5 right-5 flex justify-between items-center z-20">
+                                 <div className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 border border-white/10">
+                                     <div className="w-6 h-6 rounded-full overflow-hidden bg-white">
+                                         <img src={`https://api.dicebear.com/7.x/icons/svg?seed=${item.type}`} alt="icon" />
+                                     </div>
+                                     <span className="text-xs font-bold text-white tracking-wide">{item.title}</span>
+                                 </div>
+                                 {item.badge && (
+                                     <span className="bg-vuca-blue text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase">{item.badge}</span>
+                                 )}
+                             </div>
+
+                             {/* Playback Progress Bar (Simulated Video) */}
+                             <div className="absolute top-2 left-6 right-6 h-1 bg-white/20 rounded-full overflow-hidden z-30">
                                 <div className="h-full bg-white animate-progress origin-left"></div>
                              </div>
 
-                             {/* Floating Hearts Animation (Simulated) */}
-                             <div className="absolute bottom-20 right-4 flex flex-col items-center gap-4 z-30">
-                                 <div className="bg-black/40 backdrop-blur-md p-2 rounded-full text-white animate-pulse-slow">
-                                     <Heart fill="#ef4444" className="text-red-500" size={20} />
-                                     <span className="text-[10px] font-bold mt-1 block text-center">12k</span>
+                             {/* Center Play Button (On Hover) */}
+                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                                 <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 transform scale-0 group-hover:scale-100 transition-transform">
+                                     <Play size={32} fill="white" className="text-white ml-1" />
                                  </div>
                              </div>
 
-                             <div className="absolute bottom-4 left-4 right-4 z-20">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-md ${item.platform === 'TikTok' ? 'bg-black border border-gray-700' : item.platform === 'Facebook' ? 'bg-blue-600' : 'bg-gradient-to-tr from-yellow-400 to-purple-600'}`}>
-                                        {item.platform === 'TikTok' ? 'TT' : item.platform === 'Facebook' ? <Facebook size={12} /> : <Instagram size={12} />}
-                                    </div>
-                                    <span className="text-xs font-bold text-white drop-shadow-md">{item.platform}</span>
-                                </div>
-                                <div className="flex justify-between items-end">
-                                    <div>
-                                        <div className="text-2xl font-bold text-white leading-none drop-shadow-lg">{item.views}</div>
-                                        <div className="text-[10px] text-white/80 uppercase font-bold tracking-wider mt-1">Views</div>
-                                    </div>
-                                </div>
+                             {/* Right Side Interaction Bar */}
+                             <div className="absolute right-4 bottom-24 flex flex-col gap-5 items-center z-20">
+                                 <div className="flex flex-col items-center gap-1">
+                                     <div className="w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-red-500 transition-colors cursor-pointer">
+                                         <Heart size={20} fill="white" className="text-white" />
+                                     </div>
+                                     <span className="text-white text-[10px] font-bold">{item.views}</span>
+                                 </div>
+                                 <div className="flex flex-col items-center gap-1">
+                                     <div className="w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer">
+                                         <MessageCircle size={20} fill="white" className="text-white" />
+                                     </div>
+                                     <span className="text-white text-[10px] font-bold">1.2k</span>
+                                 </div>
+                                 <div className="flex flex-col items-center gap-1">
+                                     <div className="w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer">
+                                         <Share2 size={20} fill="white" className="text-white" />
+                                     </div>
+                                     <span className="text-white text-[10px] font-bold">Share</span>
+                                 </div>
+                             </div>
+
+                             {/* Bottom Caption */}
+                             <div className="absolute bottom-0 left-0 w-full p-5 pb-8 z-20">
+                                <p className="text-white font-medium text-sm leading-snug drop-shadow-md pr-12 line-clamp-2">
+                                    {item.title} template generated with #VucaAI. Create yours in seconds! 🚀
+                                </p>
                              </div>
                         </div>
                     ))}
@@ -774,20 +860,85 @@ const Footer = () => {
     );
 }
 
+const GoogleIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+);
+
 const AuthPage = () => {
     const { login, t } = useAppContext();
     const [email, setEmail] = useState('');
+    const [isSignUp, setIsSignUp] = useState(true); // Default to Sign Up as per request
     
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if(email) login(email);
     };
 
+    const handleGoogleLogin = () => {
+        // Simulate Google Login
+        login('user@gmail.com');
+    }
+
     return (
         <div className="min-h-screen pt-20 flex items-center justify-center px-4 relative">
              <AmbientBackground mode="subtle" />
+             <div className="w-10 h-10 md:w-12 md:h-12 absolute top-6 left-6 flex items-center justify-center filter drop-shadow-md md:hidden">
+                 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                    <path d="M25 25 L45 55 A 5 5 0 0 0 50 60 L 50 60 L 50 40 L 35 15 Z" fill="#0047FF" stroke="#0047FF" strokeWidth="20" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M50 60 L 80 25" stroke="#FFD33C" strokeWidth="20" strokeLinecap="round" strokeLinejoin="round"/>
+                 </svg>
+             </div>
              <div className="w-full max-w-md bg-white border border-gray-100 p-8 rounded-3xl shadow-2xl animate-fade-in-up">
-                 <h2 className="text-2xl font-bold text-vuca-navy mb-6 text-center">{t('navLogin')}</h2>
+                 
+                 {/* Toggle Switch */}
+                 <div className="flex bg-gray-100 p-1 rounded-xl mb-8">
+                     <button 
+                        onClick={() => setIsSignUp(false)}
+                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isSignUp ? 'bg-white text-vuca-navy shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                     >
+                        Login
+                     </button>
+                     <button 
+                        onClick={() => setIsSignUp(true)}
+                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isSignUp ? 'bg-white text-vuca-navy shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                     >
+                        Sign Up
+                     </button>
+                 </div>
+
+                 <div className="text-center mb-6">
+                     <h2 className="text-2xl font-heading font-bold text-vuca-navy mb-2">
+                         {isSignUp ? 'Create your account' : 'Welcome back'}
+                     </h2>
+                     <p className="text-gray-500 text-sm">
+                         {isSignUp ? 'Get started with Vuca AI today.' : 'Enter your details to access your dashboard.'}
+                     </p>
+                 </div>
+                 
+                 {/* Google Login Button - Highlighted */}
+                 <button 
+                    onClick={handleGoogleLogin}
+                    className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-100 hover:border-blue-100 text-gray-700 font-bold py-3.5 rounded-xl hover:bg-blue-50/50 transition-all mb-4 shadow-sm group relative overflow-hidden"
+                 >
+                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                     <GoogleIcon />
+                     <span>{isSignUp ? 'Sign up with Google' : 'Sign in with Google'}</span>
+                 </button>
+
+                 <div className="relative my-6">
+                     <div className="absolute inset-0 flex items-center">
+                         <div className="w-full border-t border-gray-200"></div>
+                     </div>
+                     <div className="relative flex justify-center text-xs uppercase">
+                         <span className="bg-white px-2 text-gray-400 font-medium">Or continue with email</span>
+                     </div>
+                 </div>
+
                  <form onSubmit={handleSubmit} className="space-y-4">
                      <div>
                          <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Email Address</label>
@@ -796,16 +947,32 @@ const AuthPage = () => {
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                             className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-vuca-blue focus:ring-2 focus:ring-blue-100 transition-all"
-                            placeholder="you@example.com"
+                            placeholder="name@work.com"
                             required
                          />
                      </div>
-                     <button type="submit" className="w-full bg-vuca-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-blue-500/30">
-                         Continue with Email
+                     {isSignUp && (
+                         <div>
+                             <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Full Name</label>
+                             <input 
+                                type="text" 
+                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-vuca-blue focus:ring-2 focus:ring-blue-100 transition-all"
+                                placeholder="John Doe"
+                             />
+                         </div>
+                     )}
+                     {!isSignUp && (
+                         <div className="flex justify-end">
+                             <a href="#" className="text-xs font-bold text-vuca-blue hover:underline">Forgot password?</a>
+                         </div>
+                     )}
+                     <button type="submit" className="w-full bg-vuca-blue hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-500/30">
+                         {isSignUp ? 'Create Account' : 'Sign In'}
                      </button>
                  </form>
-                 <div className="mt-6 text-center text-xs text-gray-400">
-                     By continuing, you agree to our Terms of Service.
+                 
+                 <div className="mt-8 text-center text-xs text-gray-400 max-w-xs mx-auto">
+                     By continuing, you agree to our Terms of Service and Privacy Policy.
                  </div>
              </div>
         </div>
@@ -814,88 +981,63 @@ const AuthPage = () => {
 
 const ProfilePage = () => {
     const { user, toggleSocialConnection } = useAppContext();
-    const socialPlatforms = [
-        { id: 'instagram', name: 'Instagram', icon: <Instagram size={20} />, color: 'bg-gradient-to-tr from-yellow-400 to-purple-600' },
-        { id: 'tiktok', name: 'TikTok', icon: <div className="w-5 h-5 bg-black text-white flex items-center justify-center rounded text-[10px] font-bold border border-gray-700">TT</div>, color: 'bg-black' },
-        { id: 'facebook', name: 'Facebook', icon: <Facebook size={20} />, color: 'bg-blue-600' },
-        { id: 'youtube', name: 'YouTube', icon: <Youtube size={20} />, color: 'bg-red-600' }
-    ];
-
     return (
-        <div className="min-h-screen pt-28 pb-12 px-4 sm:px-6 lg:px-8 bg-gray-50/50">
-            <AmbientBackground mode="subtle" />
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-3xl font-heading font-bold text-vuca-navy mb-2">My Profile</h1>
-                <p className="text-gray-500 mb-10">Manage your account and connected platforms.</p>
-
-                <div className="grid md:grid-cols-3 gap-8">
-                    {/* User Info Card */}
-                    <div className="md:col-span-1 space-y-6">
-                        <div className="glass-card p-6 rounded-3xl text-center bg-white border border-gray-100">
-                            <div className="w-24 h-24 mx-auto bg-vuca-blue rounded-full flex items-center justify-center text-4xl font-bold text-white mb-4 ring-4 ring-blue-50">
-                                {user.email?.[0].toUpperCase()}
-                            </div>
-                            <h2 className="text-xl font-bold text-vuca-navy mb-1">{user.email?.split('@')[0]}</h2>
-                            <p className="text-gray-500 text-sm mb-6">{user.email}</p>
-                            
-                            <div className="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
-                                <div className="text-xs text-gray-400 uppercase mb-1">Current Plan</div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-vuca-blue font-bold uppercase">{user.plan}</span>
-                                    {user.plan === 'free' && <button className="text-xs bg-vuca-blue px-2 py-1 rounded text-white shadow-sm">Upgrade</button>}
-                                </div>
-                            </div>
+        <div className="pt-24 pb-12 px-4 max-w-4xl mx-auto animate-fade-in-up">
+            <h1 className="text-3xl font-heading font-bold text-vuca-navy mb-8">Profile Settings</h1>
+            
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-lg p-8 mb-8">
+                <div className="flex items-center gap-6 mb-8">
+                    <div className="w-20 h-20 rounded-full bg-vuca-blue flex items-center justify-center text-white text-3xl font-bold ring-4 ring-blue-50">
+                        {user.email?.[0].toUpperCase()}
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-vuca-navy">{user.email?.split('@')[0]}</h2>
+                        <p className="text-gray-500">{user.email}</p>
+                        <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-vuca-blue rounded-full text-xs font-bold uppercase">
+                            {user.plan} Plan
                         </div>
                     </div>
+                </div>
 
-                    {/* Settings & Connections */}
-                    <div className="md:col-span-2 space-y-8">
-                        {/* Connected Accounts */}
-                        <div className="glass-card p-8 rounded-3xl bg-white border border-gray-100">
-                            <h3 className="text-xl font-bold text-vuca-navy mb-6 flex items-center gap-2">
-                                <Share2 size={20} className="text-vuca-blue" /> Connected Accounts
-                            </h3>
-                            <p className="text-sm text-gray-500 mb-6">
-                                Connect your social profiles to share videos directly from your dashboard.
-                            </p>
-                            
-                            <div className="space-y-4">
-                                {socialPlatforms.map(platform => {
-                                    const isConnected = user.connectedAccounts[platform.id as keyof ConnectedAccounts];
-                                    return (
-                                        <div key={platform.id} className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-2xl">
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md ${platform.color}`}>
-                                                    {platform.icon}
-                                                </div>
-                                                <div>
-                                                    <div className="font-bold text-vuca-navy">{platform.name}</div>
-                                                    <div className="text-xs text-gray-500">{isConnected ? 'Connected' : 'Not connected'}</div>
-                                                </div>
-                                            </div>
-                                            <button 
-                                                onClick={() => toggleSocialConnection(platform.id as keyof ConnectedAccounts)}
-                                                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                                                    isConnected 
-                                                    ? 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-100' 
-                                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200 shadow-sm'
-                                                }`}
-                                            >
-                                                {isConnected ? 'Disconnect' : 'Connect'}
-                                            </button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                <h3 className="text-lg font-bold text-vuca-navy mb-4 flex items-center gap-2">
+                    <Share2 size={18} /> Connected Accounts
+                </h3>
+                <div className="grid gap-4">
+                    <div className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white"><span className="font-bold">Tk</span></div>
+                            <span className="font-medium text-gray-700">TikTok</span>
                         </div>
-                        
-                        {/* API Key Placeholder */}
-                        <div className="glass-card p-8 rounded-3xl bg-white border border-gray-100 opacity-60">
-                            <h3 className="text-xl font-bold text-vuca-navy mb-4 flex items-center gap-2">
-                                <Lock size={20} className="text-gray-400" /> API Settings
-                            </h3>
-                            <p className="text-sm text-gray-500">API Access is available on the Pro plan.</p>
+                        <button 
+                            onClick={() => toggleSocialConnection('tiktok')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${user.connectedAccounts.tiktok ? 'bg-red-100 text-red-600' : 'bg-vuca-blue text-white'}`}
+                        >
+                            {user.connectedAccounts.tiktok ? 'Disconnect' : 'Connect'}
+                        </button>
+                    </div>
+                    <div className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-3">
+                             <div className="w-10 h-10 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 rounded-full flex items-center justify-center text-white"><Instagram size={20} /></div>
+                            <span className="font-medium text-gray-700">Instagram</span>
                         </div>
+                        <button 
+                            onClick={() => toggleSocialConnection('instagram')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${user.connectedAccounts.instagram ? 'bg-red-100 text-red-600' : 'bg-vuca-blue text-white'}`}
+                        >
+                            {user.connectedAccounts.instagram ? 'Disconnect' : 'Connect'}
+                        </button>
+                    </div>
+                     <div className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white"><Facebook size={20} /></div>
+                            <span className="font-medium text-gray-700">Facebook</span>
+                        </div>
+                        <button 
+                            onClick={() => toggleSocialConnection('facebook')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${user.connectedAccounts.facebook ? 'bg-red-100 text-red-600' : 'bg-vuca-blue text-white'}`}
+                        >
+                            {user.connectedAccounts.facebook ? 'Disconnect' : 'Connect'}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -903,839 +1045,840 @@ const ProfilePage = () => {
     );
 };
 
-const TemplateCard = ({ template, onSelect }: { template: Template; onSelect: (t: Template) => void }) => {
-    return (
-        <div onClick={() => onSelect(template)} className="group cursor-pointer">
-            <div className="relative aspect-[9/16] rounded-2xl overflow-hidden mb-3 border border-gray-100 group-hover:border-vuca-blue/50 transition-all shadow-md group-hover:shadow-xl group-hover:shadow-blue-500/10">
-                <img src={template.thumbnailUrl} alt={template.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-                
-                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] font-bold text-white flex items-center gap-1">
-                    <Play size={10} fill="currentColor" /> {template.duration}
-                </div>
-                
-                <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
-                     <span className="text-[10px] font-bold text-white bg-vuca-blue/80 backdrop-blur-sm px-2 py-0.5 rounded-full mb-2 inline-block">
-                        {template.category}
-                     </span>
-                     <div className="flex items-center gap-2 text-white/90 text-xs font-medium">
-                        {template.platform === 'TikTok' && <div className="w-4 h-4 rounded-full bg-black flex items-center justify-center font-bold text-[8px] text-white border border-gray-700">TT</div>}
-                        {template.platform === 'Instagram' && <Instagram size={14} />}
-                        {template.platform === 'Facebook' && <Facebook size={14} />}
-                        {template.platform}
-                     </div>
-                </div>
-                
-                {/* Overlay Play Button */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-12 h-12 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/50 transform scale-50 group-hover:scale-100 transition-transform duration-300 shadow-lg">
-                        <Play size={20} fill="currentColor" className="ml-1" />
-                    </div>
-                </div>
-            </div>
-            <h3 className="text-vuca-navy font-bold text-sm leading-tight group-hover:text-vuca-blue transition-colors">{template.title}</h3>
+const TemplateCard: React.FC<{ template: Template; onClick: () => void }> = ({ template, onClick }) => (
+    <div 
+        onClick={onClick}
+        className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all cursor-pointer h-[320px]"
+    >
+        <div className="absolute inset-0 bg-gray-100 animate-pulse" />
+        <img 
+            src={template.thumbnailUrl} 
+            alt={template.title} 
+            className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+            loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90" />
+        
+        <div className="absolute top-3 left-3">
+             <span className="bg-white/20 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">
+                 {template.category}
+             </span>
         </div>
-    );
-};
 
-const PricingModal = ({ onClose, onUpgrade }: { onClose: () => void; onUpgrade: (plan: UserPlan) => void }) => {
-    const { t } = useAppContext();
-    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 transform scale-0 group-hover:scale-100 transition-transform">
+                <Play size={24} fill="white" className="text-white ml-1" />
+            </div>
+        </div>
+        
+        <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
+            <h3 className="text-white font-bold text-lg mb-1 leading-tight">{template.title}</h3>
+            <div className="flex items-center justify-between text-gray-300 text-xs font-medium">
+                <span className="flex items-center gap-1"><Smartphone size={12} /> {template.platform}</span>
+                <span className="flex items-center gap-1"><Clock size={12} /> {template.duration}</span>
+            </div>
+        </div>
+    </div>
+);
+
+const PricingModal = () => {
+    const { showPricingModal, setShowPricingModal, upgradePlan } = useAppContext();
+    if (!showPricingModal) return null;
+
+    const handleSelect = (planId: string) => {
+        if(planId === 'max') {
+             window.open('https://wa.me/6285157626264', '_blank');
+        } else {
+            upgradePlan(planId as UserPlan);
+            setShowPricingModal(false);
+            alert(`Switched to ${planId.toUpperCase()} plan!`);
+        }
+    };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/80 backdrop-blur-md animate-fade-in">
-             <div className="relative w-full max-w-5xl bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-vuca-navy z-20"><X size={24} /></button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowPricingModal(false)} />
+            <div className="bg-white rounded-[2rem] max-w-5xl w-full max-h-[90vh] overflow-y-auto relative z-10 animate-fade-in-up shadow-2xl">
+                 <button onClick={() => setShowPricingModal(false)} className="absolute top-6 right-6 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                     <X size={20} />
+                 </button>
                  
-                 <div className="p-8 bg-gray-50 border-b border-gray-100 flex flex-col items-center">
-                     <h2 className="text-3xl font-heading font-bold text-vuca-navy mb-2">{t('pricingTitle')}</h2>
-                     <p className="text-gray-500 mb-6">{t('pricingSubtitle')}</p>
+                 <div className="p-8 md:p-12 text-center">
+                     <h2 className="text-3xl font-heading font-bold text-vuca-navy mb-4">Upgrade to Pro</h2>
+                     <p className="text-gray-500 mb-12">Remove limits and generate viral videos instantly.</p>
                      
-                     <div className="bg-white p-1 rounded-full flex items-center relative border border-gray-200">
-                        <button 
-                            onClick={() => setBillingCycle('monthly')}
-                            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${billingCycle === 'monthly' ? 'bg-vuca-navy text-white shadow-sm' : 'text-gray-500'}`}
-                        >
-                            Monthly
-                        </button>
-                        <button 
-                            onClick={() => setBillingCycle('yearly')}
-                            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${billingCycle === 'yearly' ? 'bg-vuca-navy text-white shadow-sm' : 'text-gray-500'}`}
-                        >
-                            Yearly
-                        </button>
-                     </div>
-                 </div>
-                 
-                 <div className="p-8 overflow-y-auto bg-white flex-grow">
                      <div className="grid md:grid-cols-3 gap-6">
-                         {/* Basic Plan */}
-                         <div className="border border-gray-200 rounded-2xl p-6 hover:border-vuca-blue/50 transition-all cursor-pointer group bg-gray-50 hover:bg-white hover:shadow-xl flex flex-col" onClick={() => onUpgrade('basic')}>
+                         <div className="p-6 rounded-3xl border border-gray-200 bg-gray-50 text-left">
                              <div className="text-xl font-bold text-vuca-navy mb-2">Basic</div>
-                             <div className="text-3xl font-bold text-vuca-navy mb-4">${billingCycle === 'monthly' ? 23 : 18}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
-                             <ul className="space-y-3 mb-6 flex-grow">
-                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> 15 Videos / Month</li>
-                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> 720p Export</li>
+                             <div className="text-3xl font-bold text-vuca-navy mb-6">$23<span className="text-sm font-normal text-gray-500">/mo</span></div>
+                             <ul className="space-y-3 mb-8 text-sm text-gray-600">
+                                 <li className="flex gap-2"><Check size={16} className="text-vuca-blue" /> 15 Videos/mo</li>
+                                 <li className="flex gap-2"><Check size={16} className="text-vuca-blue" /> 720p Export</li>
                              </ul>
-                             <button className="w-full py-3 rounded-xl border border-gray-300 text-vuca-navy font-bold group-hover:border-vuca-blue group-hover:text-vuca-blue transition-colors">Choose Basic</button>
+                             <button onClick={() => handleSelect('basic')} className="w-full py-3 rounded-xl border-2 border-vuca-blue text-vuca-blue font-bold hover:bg-blue-50">Select Basic</button>
                          </div>
                          
-                         {/* Pro Plan */}
-                         <div className="border-2 border-vuca-blue rounded-2xl p-6 relative bg-white cursor-pointer transform hover:scale-105 transition-all shadow-lg flex flex-col" onClick={() => onUpgrade('pro')}>
-                             <div className="absolute top-0 right-0 bg-vuca-blue text-white text-xs font-bold px-3 py-1 rounded-bl-xl">POPULAR</div>
+                         <div className="p-6 rounded-3xl border-2 border-vuca-blue bg-white text-left relative shadow-xl transform scale-105">
+                             <div className="absolute top-0 right-0 bg-vuca-blue text-white text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl">POPULAR</div>
                              <div className="text-xl font-bold text-vuca-navy mb-2">Pro</div>
-                             <div className="text-3xl font-bold text-vuca-navy mb-4">${billingCycle === 'monthly' ? 49 : 39}<span className="text-sm text-gray-500 font-normal">/mo</span></div>
-                             <ul className="space-y-3 mb-6 flex-grow">
-                                 <li className="flex items-center gap-2 text-sm text-gray-600 font-bold"><Check size={16} className="text-vuca-blue"/> 40 Videos / Month</li>
-                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> 1080p Export</li>
-                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> No Watermark</li>
+                             <div className="text-3xl font-bold text-vuca-navy mb-6">$49<span className="text-sm font-normal text-gray-500">/mo</span></div>
+                             <ul className="space-y-3 mb-8 text-sm text-gray-600 font-medium">
+                                 <li className="flex gap-2"><Check size={16} className="text-vuca-blue" /> 40 Videos/mo</li>
+                                 <li className="flex gap-2"><Check size={16} className="text-vuca-blue" /> 1080p Export</li>
+                                 <li className="flex gap-2"><Check size={16} className="text-vuca-blue" /> No Watermark</li>
                              </ul>
-                             <button className="w-full py-3 rounded-xl bg-vuca-blue text-white font-bold shadow-lg shadow-blue-500/30">Choose Pro</button>
+                             <button onClick={() => handleSelect('pro')} className="w-full py-3 rounded-xl bg-vuca-blue text-white font-bold hover:bg-blue-600 shadow-lg shadow-blue-500/30">Upgrade Now</button>
                          </div>
-
-                         {/* Max Plan */}
-                         <div className="border border-gray-200 rounded-2xl p-6 transition-all bg-gray-50 flex flex-col">
+                         
+                         <div className="p-6 rounded-3xl border border-gray-200 bg-gray-50 text-left">
                              <div className="text-xl font-bold text-vuca-navy mb-2">Max</div>
-                             <div className="text-3xl font-bold text-vuca-navy mb-4">Custom</div>
-                             <ul className="space-y-3 mb-6 flex-grow">
-                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> Unlimited Videos</li>
-                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> API Access</li>
-                                 <li className="flex items-center gap-2 text-sm text-gray-600"><Check size={16} className="text-vuca-blue"/> Dedicated Manager</li>
+                             <div className="text-3xl font-bold text-vuca-navy mb-6">Custom</div>
+                             <ul className="space-y-3 mb-8 text-sm text-gray-600">
+                                 <li className="flex gap-2"><Check size={16} className="text-vuca-blue" /> Unlimited Videos</li>
+                                 <li className="flex gap-2"><Check size={16} className="text-vuca-blue" /> API Access</li>
                              </ul>
-                             <button 
-                                onClick={() => window.open('https://wa.me/6285157626264', '_blank')}
-                                className="w-full py-3 rounded-xl bg-vuca-navy text-white font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-                             >
-                                <PhoneCall size={16} /> Talk to Sales
-                             </button>
+                             <button onClick={() => handleSelect('max')} className="w-full py-3 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-gray-100">Contact Sales</button>
                          </div>
                      </div>
+                 </div>
+            </div>
+        </div>
+    );
+};
+
+const ProjectCard: React.FC<{ project: Project }> = ({ project }) => (
+    <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+         <div className="aspect-[9/16] bg-gray-100 relative overflow-hidden">
+             <img src={project.thumbnailUrl} alt={project.templateTitle} className="w-full h-full object-cover" />
+             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                 <button className="p-3 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/40 mr-2">
+                     <Play size={20} fill="white" />
+                 </button>
+                 <button className="p-3 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/40">
+                     <Share2 size={20} />
+                 </button>
+             </div>
+             <div className="absolute top-2 right-2 bg-black/50 backdrop-blur text-white text-[10px] px-2 py-1 rounded">
+                 {project.platform}
+             </div>
+         </div>
+         <div className="p-3">
+             <h4 className="font-bold text-vuca-navy truncate">{project.templateTitle}</h4>
+             <p className="text-xs text-gray-500 mt-1">{new Date(project.createdAt).toLocaleDateString()}</p>
+         </div>
+    </div>
+);
+
+const OnboardingModal = () => {
+    const { user, completeOnboarding, toggleSocialConnection } = useAppContext();
+    
+    // Only show if logged in AND has NOT onboarded
+    if (!user.isLoggedIn || user.hasOnboarded) return null;
+
+    return (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+             <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
+             <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 relative z-20 animate-fade-in-up shadow-2xl">
+                 <div className="text-center mb-8">
+                     <div className="w-16 h-16 bg-blue-100 text-vuca-blue rounded-full flex items-center justify-center mx-auto mb-4">
+                         <Share2 size={32} />
+                     </div>
+                     <h2 className="text-2xl font-bold text-vuca-navy mb-2">Connect Your Socials</h2>
+                     <p className="text-gray-500">Connect your accounts to publish content directly.</p>
+                 </div>
+
+                 <div className="space-y-4 mb-8">
+                      <button 
+                          onClick={() => toggleSocialConnection('tiktok')}
+                          className={`w-full p-4 rounded-xl border flex items-center justify-between transition-all ${user.connectedAccounts.tiktok ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}
+                      >
+                          <div className="flex items-center gap-3">
+                               <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white text-xs font-bold">Tk</div>
+                               <span className="font-bold text-gray-800">TikTok</span>
+                          </div>
+                          {user.connectedAccounts.tiktok ? <CheckCircle className="text-green-500" /> : <span className="text-sm font-bold text-vuca-blue">Connect</span>}
+                      </button>
+
+                      <button 
+                          onClick={() => toggleSocialConnection('instagram')}
+                          className={`w-full p-4 rounded-xl border flex items-center justify-between transition-all ${user.connectedAccounts.instagram ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}
+                      >
+                          <div className="flex items-center gap-3">
+                               <div className="w-8 h-8 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 rounded-full flex items-center justify-center text-white"><Instagram size={16} /></div>
+                               <span className="font-bold text-gray-800">Instagram</span>
+                          </div>
+                          {user.connectedAccounts.instagram ? <CheckCircle className="text-green-500" /> : <span className="text-sm font-bold text-vuca-blue">Connect</span>}
+                      </button>
+                 </div>
+
+                 <button 
+                    onClick={completeOnboarding}
+                    className="w-full py-3.5 bg-vuca-blue text-white font-bold rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/30"
+                 >
+                     Continue to Dashboard
+                 </button>
+                 <button 
+                    onClick={completeOnboarding}
+                    className="w-full py-3 text-gray-400 font-bold text-sm mt-2 hover:text-gray-600"
+                 >
+                     Skip for now
+                 </button>
+             </div>
+        </div>
+    );
+};
+
+const ProductAnalyzer = ({ onRecommend }: { onRecommend: (category: string) => void }) => {
+    const [description, setDescription] = useState('');
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    const handleAnalyze = async () => {
+        if(!description) return;
+        setIsAnalyzing(true);
+        try {
+            if (!process.env.API_KEY) {
+                alert("API Key missing. Simulating analysis.");
+                setTimeout(() => {
+                    onRecommend('Tech');
+                    setIsAnalyzing(false);
+                }, 1500);
+                return;
+            }
+
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const prompt = `Analyze this product description: "${description}". 
+            Recommend the SINGLE best video category from this list: [Fashion, Tech, Food, Beauty, Home, Fitness, Gaming]. 
+            Return ONLY the category name.`;
+
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: prompt,
+            });
+            
+            const category = response.text?.trim();
+            if(category) {
+                 // Simple validation to match our known categories, fallback to 'Fashion' if weird response
+                 const validCategories = ['Fashion', 'Tech', 'Food', 'Beauty', 'Home', 'Fitness', 'Gaming'];
+                 const match = validCategories.find(c => category.includes(c)) || 'Fashion';
+                 onRecommend(match);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Analysis failed. Try manually searching.");
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
+
+    return (
+        <div className="bg-gradient-to-r from-vuca-navy to-blue-900 rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+             
+             <div className="relative z-10">
+                 <div className="flex items-center gap-2 mb-4">
+                     <Sparkles className="text-vuca-yellow animate-pulse" size={20} />
+                     <h3 className="font-bold text-lg">AI Template Recommender</h3>
+                 </div>
+                 <p className="text-gray-300 mb-6 max-w-xl">Tell us about your product, and we'll instantly find the highest converting templates for your niche.</p>
+                 
+                 <div className="flex flex-col sm:flex-row gap-3">
+                     <input 
+                        type="text" 
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="e.g. A fast charging power bank for travelers..."
+                        className="flex-grow bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:bg-white/20 transition-all"
+                     />
+                     <button 
+                        onClick={handleAnalyze}
+                        disabled={isAnalyzing || !description}
+                        className="bg-vuca-blue hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-blue-900/50 disabled:opacity-50 flex items-center gap-2 whitespace-nowrap"
+                     >
+                        {isAnalyzing ? <Loader2 className="animate-spin" size={18} /> : <Wand2 size={18} />}
+                        Find Best Templates
+                     </button>
                  </div>
              </div>
         </div>
     );
 };
 
-const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
-    return (
-        <div className="gradient-border-card rounded-xl overflow-hidden group shadow-md hover:shadow-xl transition-shadow bg-white">
-            <div className="aspect-[9/16] relative bg-gray-100 rounded-xl overflow-hidden">
-                <img src={project.thumbnailUrl} alt={project.templateTitle} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
-                
-                <div className="absolute top-3 right-3 bg-green-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold shadow-lg">
-                    READY
-                </div>
-
-                <div className="absolute bottom-0 left-0 w-full p-4">
-                    <span className="text-[10px] text-gray-300 mb-1 block">{project.createdAt.toLocaleDateString()}</span>
-                    <h3 className="text-white font-heading font-semibold text-sm leading-tight mb-3">{project.templateTitle}</h3>
-                    
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
-                        <button className="flex-1 bg-white/20 hover:bg-white/30 text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 backdrop-blur-sm">
-                            <Download size={12} /> Save
-                        </button>
-                        <button className="flex-1 bg-vuca-blue hover:bg-blue-600 text-white py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow-lg">
-                            <Share2 size={12} /> Share
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const Editor = ({ template, onBack }: { template: Template; onBack: () => void }) => {
-    const { t, user, setShowPricingModal, lang, addProject } = useAppContext();
-    const [prompt, setPrompt] = useState('');
-    const [script, setScript] = useState('');
-    const [loading, setLoading] = useState(false);
+const Editor = ({ templateId, onBack }: { templateId: string, onBack: () => void }) => {
+    const { t, setShowPricingModal, addProject } = useAppContext();
+    const template = MOCK_TEMPLATES.find(t => t.id === templateId) || MOCK_TEMPLATES[0];
+    
     const [step, setStep] = useState(1);
-    const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
+    const [productUrl, setProductUrl] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [script, setScript] = useState('');
     
-    // Step 2 Configurations
-    const [visualMode, setVisualMode] = useState<'upload' | 'avatar' | 'generate'>('upload');
-    const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-    const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0].id);
+    // Step 2 State
+    const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+    const [customAvatar, setCustomAvatar] = useState<string | null>(null);
     const [selectedVoice, setSelectedVoice] = useState(VOICES[0].id);
+    const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
     const [hasSubtitles, setHasSubtitles] = useState(true);
+    const [visualMode, setVisualMode] = useState<'upload' | 'avatar'>('upload');
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
-    const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
-    
-    // Image Generation
-    const [imagePrompt, setImagePrompt] = useState('');
-    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-    const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'script' | 'visual' | 'audio'>('visual');
 
-    // Final Video
+    // Step 3 (Generation)
     const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
-    
+    const [generationProgress, setGenerationProgress] = useState(0);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const avatarInputRef = useRef<HTMLInputElement>(null);
 
     const handleGenerateScript = async () => {
-        if (!prompt) return;
-
-        const apiKey = import.meta.env.VITE_API_KEY;
-        if (!apiKey) {
-             alert("Configuration Error: VITE_API_KEY is missing. Please add your Gemini API Key in Vercel Environment Variables.");
-             return;
-        }
-
-        setLoading(true);
-        try {
-            // Use Vite env variable
-            const ai = new GoogleGenAI({ apiKey });
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash', // Switched to 2.5 Flash for better reliability
-                contents: `Write a short, engaging video script (under 60 seconds) for a ${template.platform} video about: "${prompt}". 
-                The category is ${template.category}.
-                Tone: Friendly, Simple, Confident.
-                Structure: Hook, Value, Call to Action.
-                Language: ${lang === 'id' ? 'Bahasa Indonesia' : 'English'}.
-                Format the output simply as the spoken script text.`,
-                config: { systemInstruction: "You are an expert viral content scripter." }
-            });
-            
-            const generatedText = response.text;
-            if (generatedText) {
-                setScript(generatedText);
-                setStep(2);
-            } else {
-                 alert("AI generated empty response. Please try again.");
-            }
-        } catch (e: any) {
-            console.error("Script generation error:", e);
-            alert(`Error generating script: ${e.message || "Please check your connection."}`);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleGenerateImage = async () => {
-        if (!imagePrompt) return;
+        if (!productUrl) return;
+        setIsGenerating(true);
         
-        const apiKey = import.meta.env.VITE_API_KEY;
-        if (!apiKey) {
-             alert("Configuration Error: VITE_API_KEY is missing. Please add your Gemini API Key in Vercel Environment Variables.");
-             return;
-        }
-
-        setIsGeneratingImage(true);
         try {
-            const ai = new GoogleGenAI({ apiKey });
-            const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-image-preview',
-                contents: { parts: [{ text: imagePrompt }] },
-                config: { tools: [{ googleSearch: {} }] }
-            });
-
-            let foundImage = null;
-             if (response.candidates?.[0]?.content?.parts) {
-                for (const part of response.candidates[0].content.parts) {
-                    if (part.inlineData) {
-                        foundImage = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-                        break;
-                    }
-                }
-            }
-
-            if (foundImage) setGeneratedImage(foundImage);
-            else alert("No image generated. Please try a different prompt.");
-        } catch (e: any) {
-            console.error(e);
-             alert(`Image generation failed: ${e.message || "Unknown error"}`);
-        } finally {
-            setIsGeneratingImage(false);
-        }
-    };
-
-    const handleGenerateAudio = async () => {
-        const apiKey = import.meta.env.VITE_API_KEY;
-        if (!apiKey) {
-             alert("Configuration Error: VITE_API_KEY is missing. Please add your Gemini API Key in Vercel Environment Variables.");
-             return;
-        }
-
-        setIsGeneratingAudio(true);
-        try {
-             const ai = new GoogleGenAI({ apiKey });
-             const response = await ai.models.generateContent({
-                  model: "gemini-2.5-flash-preview-tts",
-                  contents: [{ parts: [{ text: script.substring(0, 300) }] }],
-                  config: {
-                    responseModalities: [Modality.AUDIO],
-                    speechConfig: {
-                        voiceConfig: { prebuiltVoiceConfig: { voiceName: selectedVoice } },
-                    },
-                  },
-             });
-
-            const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-            if (base64Audio) {
-                const audioBlob = await (await fetch(`data:audio/mp3;base64,${base64Audio}`)).blob();
-                const url = URL.createObjectURL(audioBlob);
-                setAudioUrl(url);
-                const audio = new Audio(url);
-                audio.play();
-            }
-        } catch (e) {
-            console.error("Audio generation error:", e);
-        } finally {
-            setIsGeneratingAudio(false);
-        }
-    }
-
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setUploadedImage(url);
-        }
-    };
-
-    const handleGenerateVideo = async () => {
-        if (user.plan === 'free') {
-            setShowPricingModal(true);
-            return;
-        }
-
-        if (!await (window as any).aistudio.hasSelectedApiKey()) {
-             await (window as any).aistudio.openSelectKey();
-        }
-        
-        // Note: For video generation using Veo models, we still need the main client initialized
-        // However, aistudio.openSelectKey handles its own auth context for the billing check.
-        // The actual API call below needs the VITE_API_KEY or the key from the select dialog if we were using it for everything.
-        // Currently we use VITE_API_KEY for the ai client.
-
-        const apiKey = import.meta.env.VITE_API_KEY;
-        if (!apiKey) {
-             alert("Configuration Error: VITE_API_KEY is missing.");
-             return;
-        }
-
-        setIsGeneratingVideo(true);
-        try {
-            const ai = new GoogleGenAI({ apiKey });
-            
-            let sourceImageBase64 = '';
-            let thumbUrl = template.thumbnailUrl;
-            
-            if (visualMode === 'upload' && uploadedImage) {
-                sourceImageBase64 = await urlToBase64(uploadedImage);
-                thumbUrl = uploadedImage;
-            } else if (visualMode === 'avatar') {
-                const currentAvatar = AVATARS.find(a => a.id === selectedAvatar);
-                if (currentAvatar) {
-                    sourceImageBase64 = await urlToBase64(currentAvatar.url);
-                    thumbUrl = currentAvatar.url;
-                }
-            } else if (visualMode === 'generate' && generatedImage) {
-                sourceImageBase64 = generatedImage.split(',')[1];
-                thumbUrl = generatedImage;
-            }
-
-            if (!sourceImageBase64) {
-                alert("Please select or upload a visual source first.");
-                setIsGeneratingVideo(false);
+            // Check API Key
+            if (!process.env.API_KEY) {
+                alert("Missing API Key. Please add API_KEY to your environment variables.");
+                setIsGenerating(false);
                 return;
             }
 
-            let operation = await ai.models.generateVideos({
-                model: 'veo-3.1-fast-generate-preview',
-                prompt: `Cinematic video of this character/product. ${prompt.substring(0,100)}`,
-                image: {
-                    imageBytes: sourceImageBase64,
-                    mimeType: 'image/png',
-                },
-                config: {
-                    numberOfVideos: 1,
-                    resolution: '720p',
-                    aspectRatio: '9:16'
-                }
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            
+            const prompt = `Create a viral short video script (Hook, Value, CTA) for a product described as: ${productUrl}. 
+            The template style is ${template.title}. Keep it under ${template.duration}. 
+            Language: English. Format:
+            [Scene 1]: Visual - Audio
+            [Scene 2]: Visual - Audio`;
+
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: prompt,
             });
-
-            while (!operation.done) {
-                 await new Promise(resolve => setTimeout(resolve, 5000));
-                 operation = await ai.operations.getVideosOperation({operation: operation});
+            const text = response.text;
+            
+            if (text) {
+                setScript(text);
+                setStep(2);
+            } else {
+                 alert("Failed to generate script. Please try again.");
             }
-
-            const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-            if (downloadLink) {
-                 const finalVideoUrl = `${downloadLink}&key=${apiKey}`;
-                 setGeneratedVideoUrl(finalVideoUrl);
-                 
-                 // Save to My Projects
-                 const newProject: Project = {
-                     id: Math.random().toString(36).substr(2, 9),
-                     templateId: template.id,
-                     templateTitle: template.title,
-                     videoUrl: finalVideoUrl,
-                     thumbnailUrl: thumbUrl,
-                     createdAt: new Date(),
-                     platform: template.platform
-                 };
-                 addProject(newProject);
-                 setShowSuccessModal(true);
-            }
-
-        } catch (e) {
-            console.error("Video generation failed:", e);
-            alert("Failed to generate video. Please try again later.");
+        } catch (error: any) {
+            console.error("Generation Error:", error);
+            alert(`Error generating script: ${error.message || "Unknown error"}`);
         } finally {
-            setIsGeneratingVideo(false);
+            setIsGenerating(false);
         }
     };
-    
-    const currentAvatar = AVATARS.find(a => a.id === selectedAvatar);
-    let previewImageSrc = template.thumbnailUrl;
-    if (visualMode === 'upload' && uploadedImage) previewImageSrc = uploadedImage;
-    if (visualMode === 'avatar' && currentAvatar) previewImageSrc = currentAvatar.url;
-    if (visualMode === 'generate' && generatedImage) previewImageSrc = generatedImage;
 
-    const handleSocialShare = (platform: string) => {
-        alert(`Sharing video to ${platform}! (Integration simulated)`);
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0) {
+            files.slice(0, 5 - uploadedImages.length).forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setUploadedImages(prev => [...prev, reader.result as string]);
+                };
+                reader.readAsDataURL(file);
+            });
+            setVisualMode('upload');
+        }
+    };
+
+    const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setCustomAvatar(reader.result as string);
+                setSelectedAvatar('custom'); // select the new custom avatar
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    const handleGenerateAudio = async () => {
+        // Mock TTS generation for preview
+        if (!process.env.API_KEY) {
+             alert("Missing API Key");
+             return;
+        }
+        setAudioUrl("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"); // Mock
+    };
+
+    const handleGenerateVideo = async () => {
+         // Logic for Step 3: Video Generation with Veo
+         setIsGenerating(true);
+         setStep(3);
+         
+         // Simulation of progress
+         let progress = 0;
+         const interval = setInterval(() => {
+             progress += 5;
+             setGenerationProgress(progress);
+             if(progress >= 100) {
+                 clearInterval(interval);
+                 setIsGenerating(false);
+                 setGeneratedVideoUrl("https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"); // Mock Result
+                 
+                 // Save to Projects
+                 addProject({
+                     id: Date.now().toString(),
+                     templateId: template.id,
+                     templateTitle: template.title,
+                     videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                     thumbnailUrl: uploadedImages[0] || template.thumbnailUrl,
+                     createdAt: new Date(),
+                     platform: template.platform
+                 });
+             }
+         }, 200);
+    };
+
+    const handleExport = () => {
+        setShowPricingModal(true);
     };
 
     return (
-        <div className="min-h-screen pt-20 flex flex-col md:flex-row bg-white">
-             <AmbientBackground mode="subtle" />
-            
-            {/* Success Modal Overlay */}
-            {showSuccessModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/80 backdrop-blur-md animate-fade-in-up">
-                    <div className="bg-white border border-gray-100 p-8 rounded-3xl max-w-md w-full text-center relative overflow-hidden shadow-2xl">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-vuca-blue to-vuca-yellow"></div>
-                        <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500">
-                            <CheckCircle size={40} />
-                        </div>
-                        <h2 className="text-2xl font-bold text-vuca-navy mb-2">Video Generated!</h2>
-                        <p className="text-gray-500 mb-8">Your video has been saved to "My Projects".</p>
-                        
-                        <div className="grid grid-cols-3 gap-3 mb-8">
-                             {['Instagram', 'TikTok', 'Facebook'].map(p => (
-                                 <button key={p} onClick={() => handleSocialShare(p)} className="flex flex-col items-center gap-2 group">
-                                     <div className="w-12 h-12 rounded-full bg-gray-50 group-hover:bg-vuca-blue group-hover:text-white flex items-center justify-center transition-all border border-gray-100 shadow-sm">
-                                         <Share2 size={18} />
-                                     </div>
-                                     <span className="text-[10px] text-gray-500 group-hover:text-vuca-navy uppercase font-bold">{p}</span>
-                                 </button>
-                             ))}
-                        </div>
-                        
-                        <div className="flex gap-3">
-                             <button onClick={() => setShowSuccessModal(false)} className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors">Close</button>
-                             <button onClick={onBack} className="flex-1 py-3 bg-vuca-blue hover:bg-blue-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-blue-500/30">Go to Dashboard</button>
-                        </div>
-                    </div>
-                </div>
-            )}
+      <div className="pt-24 pb-12 px-4 max-w-7xl mx-auto h-screen flex flex-col">
+        <div className="flex items-center gap-4 mb-6 shrink-0">
+          <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full text-gray-500">
+            <ArrowRight className="rotate-180" size={20} />
+          </button>
+          <div>
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Step {step} of 3</div>
+              <h1 className="text-2xl font-heading font-bold text-vuca-navy">Create Video</h1>
+          </div>
+        </div>
 
-            {/* Left Panel: Controls */}
-            <div className="w-full md:w-1/3 border-r border-gray-100 p-6 md:p-8 overflow-y-auto z-10 bg-white/95 backdrop-blur-xl h-auto md:h-[calc(100vh-80px)]">
-                <button onClick={onBack} className="flex items-center text-gray-500 hover:text-vuca-blue mb-8 text-sm group transition-colors">
-                    <ChevronRight className="rotate-180 mr-1 group-hover:-translate-x-1 transition-transform" size={16} /> Back to Templates
-                </button>
-                
-                 <div className="mb-8">
-                     <span className="text-xs font-bold text-vuca-purple px-2.5 py-1 bg-purple-50 rounded-full border border-purple-100">STEP {step} OF 3</span>
-                     <h2 className="text-3xl font-heading font-bold text-vuca-navy mt-4 mb-2">Create Video</h2>
-                     <p className="text-sm text-gray-500">Template: <span className="text-vuca-blue font-medium">{template.title}</span></p>
-                </div>
-                
-                 <div className="space-y-6">
-                    {step === 1 && (
-                        <>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-                                    {t('productUrl')}
-                                </label>
-                                <div className="gradient-border-card rounded-xl p-[1px] shadow-sm">
-                                    <textarea 
-                                        value={prompt}
-                                        onChange={(e) => setPrompt(e.target.value)}
-                                        placeholder="Example: Review of the new Sony headphones with noise cancellation..."
-                                        className="w-full bg-white rounded-xl p-4 text-gray-800 placeholder-gray-400 focus:outline-none min-h-[140px] resize-none block transition-all"
-                                    />
-                                </div>
-                            </div>
-                            
-                            <button 
-                                onClick={handleGenerateScript}
-                                disabled={loading || !prompt}
-                                className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg ${
-                                    loading || !prompt ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-vuca-blue hover:bg-blue-600 text-white shadow-blue-500/30 hover:-translate-y-1'
-                                }`}
-                            >
-                                {loading ? <Loader2 className="animate-spin" /> : <Sparkles size={20} />}
-                                {loading ? t('generating') : t('generateScript')}
-                            </button>
-                        </>
-                    )}
+        <div className="flex-grow grid lg:grid-cols-12 gap-8 h-full min-h-0">
+           {/* Left Panel - Controls */}
+           <div className="lg:col-span-7 flex flex-col h-full overflow-y-auto pr-2 scrollbar-hide">
+              
+              {/* Step 1: Script */}
+              {step === 1 && (
+                  <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg animate-fade-in-up">
+                      <h2 className="text-xl font-bold text-vuca-navy mb-4">Product Details</h2>
+                      <div className="space-y-4">
+                          <label className="block text-sm font-medium text-gray-700">What are you promoting?</label>
+                          <textarea 
+                             className="w-full h-40 bg-gray-50 border border-gray-200 rounded-2xl p-4 text-gray-900 focus:ring-2 focus:ring-vuca-blue focus:border-vuca-blue transition-all resize-none"
+                             placeholder="Paste your product URL or describe the product features, benefits, and target audience..."
+                             value={productUrl}
+                             onChange={(e) => setProductUrl(e.target.value)}
+                          />
+                          <button 
+                             onClick={handleGenerateScript}
+                             disabled={isGenerating || !productUrl}
+                             className="w-full bg-vuca-blue text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/30"
+                          >
+                              {isGenerating ? <Loader2 className="animate-spin" /> : <Sparkles size={18} />}
+                              Generate Script with AI
+                          </button>
+                      </div>
+                  </div>
+              )}
 
-                    {step >= 2 && (
-                         <div className="animate-fade-in-up space-y-8">
-                             {/* Visual Source Selection */}
-                            <div>
-                                <h3 className="text-lg font-bold text-vuca-navy mb-4">1. Visual Source</h3>
-                                <div className="flex bg-gray-100 p-1 rounded-xl mb-4">
-                                    <button 
+              {/* Step 2: Customization */}
+              {step === 2 && (
+                  <div className="bg-white rounded-3xl border border-gray-100 shadow-lg flex flex-col h-full overflow-hidden animate-fade-in-up">
+                      {/* Tabs */}
+                      <div className="flex border-b border-gray-100 p-2 gap-2 bg-gray-50/50">
+                          <button 
+                            onClick={() => setActiveTab('visual')}
+                            className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${activeTab === 'visual' ? 'bg-white text-vuca-blue shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                          >
+                             <ImageIcon size={16} /> Visuals
+                          </button>
+                          <button 
+                            onClick={() => setActiveTab('audio')}
+                            className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${activeTab === 'audio' ? 'bg-white text-vuca-blue shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                          >
+                             <Mic size={16} /> Audio
+                          </button>
+                          <button 
+                            onClick={() => setActiveTab('script')}
+                            className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${activeTab === 'script' ? 'bg-white text-vuca-blue shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                          >
+                             <Type size={16} /> Script
+                          </button>
+                      </div>
+
+                      <div className="p-6 overflow-y-auto flex-grow">
+                          {activeTab === 'visual' && (
+                              <div className="space-y-6">
+                                  <div className="flex gap-4">
+                                      <button 
                                         onClick={() => setVisualMode('upload')}
-                                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${visualMode === 'upload' ? 'bg-white text-vuca-blue shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-                                    >
-                                        Upload
-                                    </button>
-                                    <button 
+                                        className={`flex-1 p-4 rounded-xl border-2 text-left transition-all ${visualMode === 'upload' ? 'border-vuca-blue bg-blue-50' : 'border-gray-100 hover:border-gray-300'}`}
+                                      >
+                                          <div className="font-bold text-gray-900 mb-1">Product Photos</div>
+                                          <div className="text-xs text-gray-500">Upload your own assets</div>
+                                      </button>
+                                      <button 
                                         onClick={() => setVisualMode('avatar')}
-                                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${visualMode === 'avatar' ? 'bg-white text-vuca-blue shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-                                    >
-                                        Model
-                                    </button>
-                                    <button 
-                                        onClick={() => setVisualMode('generate')}
-                                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${visualMode === 'generate' ? 'bg-white text-vuca-blue shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-                                    >
-                                        Generate
-                                    </button>
-                                </div>
-                                {visualMode === 'upload' && (
-                                    <div 
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-vuca-blue/50 hover:bg-blue-50/50 transition-all group relative overflow-hidden h-32 bg-gray-50"
-                                    >
-                                        <input 
-                                            type="file" 
-                                            ref={fileInputRef} 
-                                            className="hidden" 
-                                            accept="image/*"
-                                            onChange={handleFileUpload}
-                                        />
-                                        
-                                        {uploadedImage ? (
-                                            <>
-                                            <img src={uploadedImage} alt="Uploaded" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity" />
-                                            <div className="relative z-10 flex flex-col items-center">
-                                                <Upload size={20} className="text-vuca-navy mb-2" />
-                                                <span className="text-xs font-bold text-vuca-navy">Change Image</span>
-                                            </div>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <div className="w-10 h-10 rounded-full bg-blue-100 text-vuca-blue flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                                    <Upload size={20} />
-                                                </div>
-                                                <span className="text-xs font-medium text-gray-500">Upload Product Photo</span>
-                                            </>
-                                        )}
-                                    </div>
-                                )}
+                                        className={`flex-1 p-4 rounded-xl border-2 text-left transition-all ${visualMode === 'avatar' ? 'border-vuca-blue bg-blue-50' : 'border-gray-100 hover:border-gray-300'}`}
+                                      >
+                                          <div className="font-bold text-gray-900 mb-1">AI Avatar</div>
+                                          <div className="text-xs text-gray-500">Use a digital presenter</div>
+                                      </button>
+                                  </div>
 
-                                {visualMode === 'avatar' && (
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {AVATARS.map(avatar => (
-                                            <div 
+                                  {visualMode === 'upload' ? (
+                                      <div className="space-y-4">
+                                          <div 
+                                            onClick={() => uploadedImages.length < 5 && fileInputRef.current?.click()}
+                                            className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-colors ${uploadedImages.length >= 5 ? 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-50' : 'border-gray-200 cursor-pointer hover:bg-gray-50'}`}
+                                          >
+                                              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" multiple onChange={handleFileUpload} />
+                                              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-vuca-blue mb-4">
+                                                  <Upload size={24} />
+                                              </div>
+                                              <h3 className="font-bold text-gray-900">Click to upload images</h3>
+                                              <p className="text-xs text-gray-500 mt-1">Up to 5 photos (JPG, PNG)</p>
+                                          </div>
+                                          
+                                          {uploadedImages.length > 0 && (
+                                              <div className="grid grid-cols-5 gap-2">
+                                                  {uploadedImages.map((img, idx) => (
+                                                      <div key={idx} className="relative group w-full aspect-square rounded-lg overflow-hidden border border-gray-200">
+                                                          <img src={img} className="w-full h-full object-cover" />
+                                                          <button 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation(); 
+                                                                setUploadedImages(prev => prev.filter((_, i) => i !== idx));
+                                                            }} 
+                                                            className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100"
+                                                          >
+                                                              <Trash2 size={16} />
+                                                          </button>
+                                                      </div>
+                                                  ))}
+                                              </div>
+                                          )}
+                                      </div>
+                                  ) : (
+                                      <div className="grid grid-cols-2 gap-4">
+                                          {/* Custom Avatar Upload Card */}
+                                          <div 
+                                              onClick={() => avatarInputRef.current?.click()}
+                                              className={`relative rounded-xl overflow-hidden cursor-pointer border-2 border-dashed border-gray-200 hover:border-vuca-blue hover:bg-blue-50 transition-all h-48 flex flex-col items-center justify-center ${selectedAvatar === 'custom' ? 'border-vuca-blue bg-blue-50' : ''}`}
+                                          >
+                                              <input type="file" ref={avatarInputRef} className="hidden" accept="image/*" onChange={handleAvatarUpload} />
+                                              {customAvatar ? (
+                                                  <>
+                                                    <img src={customAvatar} className="w-full h-full object-cover absolute inset-0" />
+                                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold opacity-0 hover:opacity-100 transition-opacity">Change</div>
+                                                  </>
+                                              ) : (
+                                                  <>
+                                                    <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-vuca-blue mb-2"><Upload size={18} /></div>
+                                                    <span className="text-sm font-bold text-gray-600">Upload Custom</span>
+                                                  </>
+                                              )}
+                                              {customAvatar && selectedAvatar === 'custom' && (
+                                                  <div className="absolute top-2 right-2 bg-vuca-blue text-white p-1 rounded-full"><Check size={12} /></div>
+                                              )}
+                                          </div>
+
+                                          {AVATARS.map(avatar => (
+                                              <div 
                                                 key={avatar.id}
                                                 onClick={() => setSelectedAvatar(avatar.id)}
-                                                className={`relative rounded-xl overflow-hidden cursor-pointer border-2 transition-all shadow-sm ${selectedAvatar === avatar.id ? 'border-vuca-blue shadow-md' : 'border-transparent hover:border-gray-200'}`}
-                                            >
-                                                <img src={avatar.url} alt={avatar.name} className="w-full h-24 object-cover" />
-                                                <div className="absolute bottom-0 left-0 w-full bg-white/90 backdrop-blur-sm p-1.5 text-center">
-                                                    <span className="text-[10px] font-bold text-vuca-navy block">{avatar.name}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                                className={`relative rounded-xl overflow-hidden cursor-pointer border-2 transition-all h-48 ${selectedAvatar === avatar.id ? 'border-vuca-blue ring-2 ring-blue-100' : 'border-transparent'}`}
+                                              >
+                                                  <img src={avatar.url} className="w-full h-full object-cover" />
+                                                  <div className="absolute bottom-0 left-0 w-full bg-black/50 p-2 text-white text-xs font-bold backdrop-blur-sm">
+                                                      {avatar.name}
+                                                  </div>
+                                              </div>
+                                          ))}
+                                      </div>
+                                  )}
+                              </div>
+                          )}
 
-                                {visualMode === 'generate' && (
-                                    <div className="space-y-3">
-                                        <textarea
-                                            value={imagePrompt}
-                                            onChange={(e) => setImagePrompt(e.target.value)}
-                                            placeholder="Describe the image you want (e.g., A cyberpunk product showcase of headphones on a neon table)"
-                                            className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm text-gray-800 focus:outline-none focus:border-vuca-blue shadow-sm"
-                                        />
-                                        <button 
-                                            onClick={handleGenerateImage}
-                                            disabled={isGeneratingImage || !imagePrompt}
-                                            className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors"
-                                        >
-                                            {isGeneratingImage ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
-                                            Generate Visual
-                                        </button>
-                                        {generatedImage && (
-                                            <div className="relative rounded-xl overflow-hidden border border-vuca-blue/50 shadow-md">
-                                                <img src={generatedImage} alt="Generated" className="w-full h-32 object-cover" />
-                                                <div className="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded text-xs text-vuca-navy font-bold shadow-sm">Generated</div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Script Editor Section */}
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <Type size={14} /> 2. Edit Script
-                                </label>
-                                <textarea 
-                                    value={script}
-                                    onChange={(e) => setScript(e.target.value)}
-                                    className="w-full bg-white border border-gray-200 rounded-xl p-4 text-gray-700 text-sm leading-relaxed font-mono shadow-inner focus:outline-none focus:border-vuca-blue transition-colors min-h-[120px]"
-                                />
-                            </div>
-
-                            {/* Audio & Subtitles */}
-                            <div className="border-t border-gray-100 pt-6 space-y-6">
-                                <h3 className="text-lg font-bold text-vuca-navy flex items-center gap-2">
-                                    3. Audio & Captions
-                                </h3>
-                                <div className="space-y-4">
-                                    {/* Voice Selector & Generator */}
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Voiceover</label>
-                                        <div className="flex gap-2">
-                                            <div className="relative flex-1">
-                                                <select 
-                                                    value={selectedVoice}
-                                                    onChange={(e) => setSelectedVoice(e.target.value)}
-                                                    className="w-full appearance-none bg-white border border-gray-200 text-gray-700 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-vuca-blue cursor-pointer hover:bg-gray-50 shadow-sm"
-                                                >
-                                                    {VOICES.filter(v => v.lang === lang).map(voice => (
-                                                        <option key={voice.id} value={voice.id}>{voice.name}</option>
-                                                    ))}
-                                                </select>
-                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                                                    <ChevronRight className="rotate-90" size={14} />
-                                                </div>
-                                            </div>
-                                            <button 
-                                                onClick={handleGenerateAudio}
-                                                disabled={isGeneratingAudio}
-                                                className="bg-gray-100 hover:bg-gray-200 text-gray-600 p-3 rounded-xl transition-colors flex items-center justify-center tooltip-trigger shadow-sm"
-                                                title="Preview Voice"
-                                            >
-                                                {isGeneratingAudio ? <Loader2 className="animate-spin" size={20} /> : <Volume2 size={20} />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                    {/* Subtitle Toggle */}
-                                    <div 
+                          {activeTab === 'audio' && (
+                              <div className="space-y-6">
+                                  <div>
+                                      <label className="block text-sm font-bold text-gray-700 mb-2">AI Voice</label>
+                                      <div className="grid gap-2">
+                                          {VOICES.map(voice => (
+                                              <div 
+                                                key={voice.id}
+                                                onClick={() => setSelectedVoice(voice.id)}
+                                                className={`p-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${selectedVoice === voice.id ? 'border-vuca-blue bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                                              >
+                                                  <div className="flex items-center gap-3">
+                                                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedVoice === voice.id ? 'bg-vuca-blue text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                                          <Play size={16} fill="currentColor" />
+                                                      </div>
+                                                      <div>
+                                                          <div className="font-bold text-sm text-gray-900">{voice.name}</div>
+                                                          <div className="text-xs text-gray-500">English • Natural</div>
+                                                      </div>
+                                                  </div>
+                                                  {selectedVoice === voice.id && <CheckCircle size={20} className="text-vuca-blue" />}
+                                              </div>
+                                          ))}
+                                      </div>
+                                  </div>
+                                  
+                                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                      <span className="text-sm font-bold text-gray-700">Generate Subtitles</span>
+                                      <button 
                                         onClick={() => setHasSubtitles(!hasSubtitles)}
-                                        className="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors shadow-sm"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <Type size={18} className="text-gray-400" />
-                                            <span className="text-sm text-gray-700 font-medium">Auto-Captions</span>
-                                        </div>
-                                        <div className={`w-10 h-5 rounded-full relative transition-colors ${hasSubtitles ? 'bg-vuca-blue' : 'bg-gray-300'}`}>
-                                            <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${hasSubtitles ? 'left-6' : 'left-1'}`} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                        className={`w-12 h-6 rounded-full transition-colors relative ${hasSubtitles ? 'bg-vuca-blue' : 'bg-gray-300'}`}
+                                      >
+                                          <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${hasSubtitles ? 'left-7' : 'left-1'}`} />
+                                      </button>
+                                  </div>
 
-                             <div className="pt-4 flex flex-col gap-3">
-                                <button 
-                                    onClick={handleGenerateVideo} 
-                                    disabled={isGeneratingVideo}
-                                    className="w-full py-4 bg-vuca-yellow text-vuca-navy font-bold text-lg rounded-xl hover:bg-yellow-400 transition-all shadow-lg shadow-yellow-500/30 flex items-center justify-center gap-2 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isGeneratingVideo ? <><Loader2 className="animate-spin" /> Generating Video...</> : <>Export Video <ChevronRight size={18}/></>}
-                                </button>
-                                <button onClick={() => setStep(1)} className="w-full py-3 text-gray-400 text-sm hover:text-vuca-navy transition-colors">Start Over</button>
-                            </div>
-                         </div>
-                    )}
-                 </div>
-            </div>
+                                  <button onClick={handleGenerateAudio} className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold text-sm hover:bg-gray-800">
+                                      Generate Audio Preview
+                                  </button>
+                                  {audioUrl && (
+                                      <div className="bg-green-50 text-green-700 p-3 rounded-lg text-xs font-bold flex items-center gap-2">
+                                          <Check size={14} /> Audio generated successfully
+                                      </div>
+                                  )}
+                              </div>
+                          )}
 
-            {/* Right Panel: Preview */}
-            <div className="flex-1 flex items-center justify-center relative overflow-hidden bg-gray-100 p-4 md:p-8 min-h-[600px] md:min-h-[calc(100vh-80px)]">
-                {/* Phone Frame */}
-                <div className="relative w-[300px] h-[600px] md:w-[340px] md:h-[680px] border-[10px] md:border-[12px] border-white rounded-[3rem] md:rounded-[3.5rem] bg-black overflow-hidden shadow-2xl ring-1 ring-gray-200 transform transition-transform">
-                     {/* ... (Same preview logic) */}
-                    <div className="absolute top-0 w-full h-8 bg-black flex justify-center z-20 rounded-b-xl">
-                        <div className="w-16 md:w-20 h-5 bg-black rounded-b-xl"></div>
-                    </div>
+                          {activeTab === 'script' && (
+                              <div>
+                                  <label className="block text-sm font-bold text-gray-700 mb-2">Edit Script</label>
+                                  <textarea 
+                                      value={script}
+                                      onChange={(e) => setScript(e.target.value)}
+                                      className="w-full h-80 bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm leading-relaxed focus:ring-2 focus:ring-vuca-blue focus:border-vuca-blue"
+                                  />
+                              </div>
+                          )}
+                      </div>
 
-                    {generatedVideoUrl ? (
-                         <video 
-                            src={generatedVideoUrl} 
-                            className="absolute inset-0 w-full h-full object-cover" 
-                            controls 
-                            autoPlay 
-                            loop 
-                         />
-                    ) : (
-                         <img 
-                            src={previewImageSrc} 
-                            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500`} 
-                            alt="Preview"
-                        />
-                    )}
-                    
-                    {!generatedVideoUrl && (
-                        <div className="absolute inset-0 flex flex-col justify-between p-6 bg-gradient-to-b from-black/40 via-transparent to-black/80">
-                             <div className="mt-12 flex justify-between items-start">
-                                 <div className="flex flex-col gap-2">
-                                    {hasSubtitles && step >= 2 && (
-                                         <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-md border border-white/10 inline-flex items-center gap-1">
-                                             <Type size={10} className="text-vuca-yellow"/>
-                                             <span className="text-xs font-bold text-white uppercase tracking-wider">CC On</span>
-                                         </div>
-                                    )}
-                                 </div>
-                                 <div className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10">
-                                     <Globe size={16} />
-                                 </div>
-                             </div>
-                            <div className="space-y-4">
-                                 {step >= 2 && (
-                                    <div className="animate-fade-in-up bg-black/60 backdrop-blur-md p-4 rounded-2xl border-l-4 border-vuca-yellow shadow-lg">
-                                        <p className="text-white font-bold text-sm leading-snug">
-                                            "{script.split('\n')[0].replace(/"/g, '') || "Hook text here..."}"
-                                        </p>
-                                    </div>
-                                )}
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 border-2 border-white shadow-md" />
-                                    <div className="flex flex-col">
-                                        <div className="h-2.5 w-24 bg-gray-200/80 rounded mb-1.5 shadow-sm" />
-                                        <div className="h-2 w-16 bg-gray-200/50 rounded shadow-sm" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+                      <div className="p-6 border-t border-gray-100 bg-white">
+                          <button 
+                            onClick={handleGenerateVideo}
+                            className="w-full bg-vuca-blue text-white font-bold py-4 rounded-xl hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
+                          >
+                              <Video size={20} /> Generate Video
+                          </button>
+                      </div>
+                  </div>
+              )}
+
+              {/* Step 3: Loading / Result */}
+              {step === 3 && (
+                   <div className="bg-white rounded-3xl border border-gray-100 shadow-lg p-10 flex flex-col items-center justify-center text-center h-full animate-fade-in-up">
+                       {isGenerating ? (
+                           <div className="space-y-6">
+                               <div className="relative w-24 h-24 mx-auto">
+                                   <div className="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
+                                   <div className="absolute inset-0 border-4 border-vuca-blue rounded-full border-t-transparent animate-spin"></div>
+                               </div>
+                               <div>
+                                   <h2 className="text-2xl font-bold text-vuca-navy mb-2">Creating Magic...</h2>
+                                   <p className="text-gray-500">Synthesizing visuals and audio. This may take a minute.</p>
+                               </div>
+                               <div className="w-full max-w-xs mx-auto bg-gray-100 rounded-full h-2 overflow-hidden">
+                                   <div className="h-full bg-vuca-blue transition-all duration-300" style={{ width: `${generationProgress}%` }}></div>
+                               </div>
+                           </div>
+                       ) : (
+                           <div className="space-y-6 w-full max-w-md">
+                               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-600 mx-auto">
+                                   <Check size={40} />
+                               </div>
+                               <h2 className="text-3xl font-bold text-vuca-navy">Video Ready!</h2>
+                               <p className="text-gray-500">Your viral video has been generated and saved to your projects.</p>
+                               
+                               <div className="grid grid-cols-2 gap-4 pt-6">
+                                   <button 
+                                     onClick={handleExport}
+                                     className="py-3 px-6 bg-vuca-blue text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 hover:bg-blue-600"
+                                   >
+                                       <Download size={18} /> Export Video
+                                   </button>
+                                   <button 
+                                     onClick={() => {
+                                         // Share Logic
+                                         alert("Opening share dialog...");
+                                     }}
+                                     className="py-3 px-6 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 flex items-center justify-center gap-2"
+                                   >
+                                       <Share2 size={18} /> Share
+                                   </button>
+                               </div>
+                           </div>
+                       )}
+                   </div>
+              )}
+
+           </div>
+
+           {/* Right Panel - Preview */}
+           <div className="lg:col-span-5 hidden lg:block h-full">
+               <div className="sticky top-6">
+                   <div className="bg-gray-900 rounded-[2.5rem] overflow-hidden border-8 border-white shadow-2xl relative aspect-[9/16] max-h-[80vh] mx-auto">
+                       {/* Preview Content */}
+                       {step === 3 && generatedVideoUrl ? (
+                           <video src={generatedVideoUrl} controls className="w-full h-full object-cover" />
+                       ) : (
+                           <>
+                               {visualMode === 'upload' && uploadedImages.length > 0 ? (
+                                   // Mock Slideshow effect for multiple images
+                                   <div className="relative w-full h-full">
+                                       <img 
+                                           src={uploadedImages[0]} 
+                                           className="w-full h-full object-cover opacity-90"
+                                           alt="Preview"
+                                       />
+                                       {uploadedImages.length > 1 && (
+                                           <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm">
+                                               + {uploadedImages.length - 1} more
+                                           </div>
+                                       )}
+                                   </div>
+                               ) : visualMode === 'avatar' && (selectedAvatar || customAvatar) ? (
+                                    <img 
+                                        src={selectedAvatar === 'custom' && customAvatar ? customAvatar : AVATARS.find(a => a.id === selectedAvatar)?.url}
+                                        className="w-full h-full object-cover opacity-90"
+                                        alt="Avatar Preview"
+                                    />
+                               ) : (
+                                    <img 
+                                        src={template.thumbnailUrl} 
+                                        className="w-full h-full object-cover opacity-90"
+                                        alt="Template Preview"
+                                    />
+                               )}
+                               
+                               {/* UI Overlay */}
+                               <div className="absolute top-6 right-4 flex flex-col gap-3">
+                                   <div className="w-10 h-10 bg-black/20 backdrop-blur rounded-full flex items-center justify-center text-white">
+                                       <Globe size={20} />
+                                   </div>
+                               </div>
+
+                               {hasSubtitles && script && (
+                                   <div className="absolute bottom-32 left-8 right-8 text-center">
+                                       <span className="inline-block bg-black/60 backdrop-blur-sm text-white font-bold text-lg px-4 py-2 rounded-xl shadow-lg leading-snug">
+                                           {script.substring(0, 50)}...
+                                       </span>
+                                   </div>
+                               )}
+
+                               {/* Progress Bar Mock */}
+                               <div className="absolute bottom-20 left-6 right-6 h-1 bg-white/30 rounded-full">
+                                   <div className="w-1/3 h-full bg-white rounded-full"></div>
+                               </div>
+
+                               <div className="absolute bottom-6 left-6 flex items-center gap-3">
+                                   <div className="w-10 h-10 rounded-full bg-purple-500 border-2 border-white"></div>
+                                   <div className="h-2 w-24 bg-gray-200/50 rounded-full"></div>
+                               </div>
+                           </>
+                       )}
+                   </div>
+               </div>
+           </div>
         </div>
+      </div>
     );
-};
+}
 
-const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => void }) => {
-    const { t, user, projects } = useAppContext();
-    const [activeTab, setActiveTab] = useState<'explore' | 'projects'>('explore');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('All');
+const Dashboard = () => {
+    const { t, projects } = useAppContext();
+    const [filter, setFilter] = useState('All');
+    const [view, setView] = useState<'templates' | 'projects'>('templates');
+    const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
-    const categories = ['All', 'Fashion', 'Tech', 'Food', 'Beauty', 'Home', 'Fitness', 'Gaming'];
-    
-    const filteredTemplates = MOCK_TEMPLATES.filter(template => {
-        const matchesSearch = template.title.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = selectedCategory === 'All' || template.category === selectedCategory;
-        return matchesSearch && matchesCategory;
-    });
+    if (selectedTemplate) {
+        return <Editor templateId={selectedTemplate} onBack={() => setSelectedTemplate(null)} />;
+    }
+
+    const filteredTemplates = filter === 'All' 
+        ? MOCK_TEMPLATES 
+        : MOCK_TEMPLATES.filter(t => t.category === filter);
 
     return (
-        <div className="min-h-screen pt-20 pb-12 bg-white">
+        <div className="min-h-screen pt-24 px-4 bg-gray-50/30">
             <AmbientBackground mode="dashboard" />
-            
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Dashboard Header */}
-                <div className="mb-8 animate-fade-in-up">
-                    <h1 className="text-3xl md:text-4xl font-heading font-bold text-vuca-navy mb-2">{t('dashboardTitle')}</h1>
-                    <p className="text-gray-500">Welcome back, <span className="text-vuca-blue font-bold">{user.email?.split('@')[0]}</span>. Create your next viral hit.</p>
+            <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                    <div>
+                        <h1 className="text-3xl font-heading font-bold text-vuca-navy">{t('dashboardTitle')}</h1>
+                        <p className="text-gray-500">Welcome back, Creator. Ready to go viral?</p>
+                    </div>
+                    
+                    <div className="bg-gray-100 p-1 rounded-xl flex gap-1 self-start">
+                        <button 
+                            onClick={() => setView('templates')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'templates' ? 'bg-white text-vuca-navy shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Explore Templates
+                        </button>
+                        <button 
+                            onClick={() => setView('projects')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'projects' ? 'bg-white text-vuca-navy shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            My Projects
+                        </button>
+                    </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="flex gap-6 border-b border-gray-100 mb-8">
-                    <button 
-                        onClick={() => setActiveTab('explore')}
-                        className={`pb-4 px-2 font-bold text-sm transition-all relative ${activeTab === 'explore' ? 'text-vuca-blue' : 'text-gray-500 hover:text-vuca-navy'}`}
-                    >
-                        Explore Templates
-                        {activeTab === 'explore' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-vuca-blue rounded-full"></div>}
-                    </button>
-                    <button 
-                        onClick={() => setActiveTab('projects')}
-                        className={`pb-4 px-2 font-bold text-sm transition-all relative flex items-center gap-2 ${activeTab === 'projects' ? 'text-vuca-blue' : 'text-gray-500 hover:text-vuca-navy'}`}
-                    >
-                        My Projects
-                        <span className="bg-gray-100 text-xs px-2 py-0.5 rounded-full text-gray-600">{projects.length}</span>
-                        {activeTab === 'projects' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-vuca-blue rounded-full"></div>}
-                    </button>
-                </div>
-
-                {activeTab === 'explore' ? (
+                {view === 'templates' ? (
                     <>
-                        {/* Search & Filter Bar */}
-                        <div className="relative z-20 mb-10 flex flex-col md:flex-row gap-4 animate-fade-in-up animation-delay-2000">
-                            <div className="relative flex-1">
+                        {/* AI Product Analyzer Section */}
+                        <ProductAnalyzer onRecommend={(category) => setFilter(category)} />
+
+                        {/* Search & Filter */}
+                        <div className="relative z-20 mb-8 bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 items-center">
+                            <div className="relative flex-grow w-full">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                                 <input 
                                     type="text" 
                                     placeholder={t('searchPlaceholder')}
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-white border border-gray-100 rounded-xl py-4 pl-12 pr-4 text-gray-800 focus:outline-none focus:border-vuca-blue shadow-lg shadow-gray-200/50 transition-all"
+                                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-vuca-blue focus:border-transparent transition-all"
                                 />
                             </div>
-                            
-                            <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                                {categories.map(cat => (
+                            <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
+                                {['All', 'Fashion', 'Tech', 'Food', 'Beauty', 'Gaming'].map(cat => (
                                     <button 
                                         key={cat}
-                                        onClick={() => setSelectedCategory(cat)}
-                                        className={`px-5 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all border ${
-                                            selectedCategory === cat 
-                                            ? 'bg-vuca-blue text-white border-vuca-blue shadow-md shadow-blue-500/20' 
-                                            : 'bg-white text-gray-500 border-gray-100 hover:text-vuca-navy hover:border-gray-200'
-                                        }`}
+                                        onClick={() => setFilter(cat)}
+                                        className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all border ${filter === cat ? 'bg-vuca-navy text-white border-vuca-navy' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
                                     >
                                         {cat}
                                     </button>
                                 ))}
                             </div>
                         </div>
-                        
-                        {/* Templates Grid */}
-                        {filteredTemplates.length > 0 ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fade-in-up animation-delay-4000">
-                                {filteredTemplates.map(template => (
-                                    <TemplateCard key={template.id} template={template} onSelect={onSelectTemplate} />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-20 animate-fade-in-up">
-                                <div className="inline-block p-4 rounded-full bg-gray-50 mb-4 border border-gray-100">
-                                    <Search size={32} className="text-gray-400" />
-                                </div>
-                                <h3 className="text-xl font-bold text-vuca-navy mb-2">No templates found</h3>
-                                <p className="text-gray-500">Try adjusting your search or category filter.</p>
-                                <button 
-                                    onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }}
-                                    className="mt-6 text-vuca-blue font-bold hover:underline"
-                                >
-                                    Clear all filters
-                                </button>
-                            </div>
-                        )}
+
+                        {/* Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-20">
+                            {filteredTemplates.map(template => (
+                                <TemplateCard 
+                                    key={template.id} 
+                                    template={template} 
+                                    onClick={() => setSelectedTemplate(template.id)}
+                                />
+                            ))}
+                        </div>
                     </>
                 ) : (
-                    // Projects Grid
-                    <div className="animate-fade-in-up">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 pb-20">
                         {projects.length > 0 ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                {projects.map(project => (
-                                    <ProjectCard key={project.id} project={project} />
-                                ))}
-                            </div>
+                            projects.map(project => (
+                                <ProjectCard key={project.id} project={project} />
+                            ))
                         ) : (
-                            <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                                <div className="inline-block p-4 rounded-full bg-white mb-4 border border-gray-100 shadow-sm">
-                                    <Film size={32} className="text-gray-400" />
+                            <div className="col-span-full py-20 text-center">
+                                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                                    <Film size={32} />
                                 </div>
-                                <h3 className="text-xl font-bold text-vuca-navy mb-2">No projects yet</h3>
-                                <p className="text-gray-500 mb-6">Create your first video to start building your library.</p>
-                                <button 
-                                    onClick={() => setActiveTab('explore')}
-                                    className="bg-vuca-blue text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/30"
-                                >
-                                    Create New Video
-                                </button>
+                                <h3 className="text-xl font-bold text-gray-900">No projects yet</h3>
+                                <p className="text-gray-500 mb-6">Create your first video from templates.</p>
+                                <button onClick={() => setView('templates')} className="text-vuca-blue font-bold hover:underline">Browse Templates</button>
                             </div>
                         )}
                     </div>
@@ -1746,35 +1889,37 @@ const Dashboard = ({ onSelectTemplate }: { onSelectTemplate: (t: Template) => vo
 };
 
 const App = () => {
+  const [view, setView] = useState('landing'); // landing, auth, dashboard, profile
+  
+  // App State
   const [lang, setLang] = useState<Language>('en');
   const [user, setUser] = useState<UserState>({ 
       isLoggedIn: false, 
       email: null, 
       plan: 'free',
-      connectedAccounts: { instagram: false, tiktok: false, facebook: false, youtube: false } 
+      connectedAccounts: { instagram: false, tiktok: false, facebook: false, youtube: false },
+      hasOnboarded: false
   });
-  const [view, setView] = useState('landing');
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
 
   const t = (key: string) => TRANSLATIONS[key]?.[lang] || key;
 
   const login = (email: string) => {
-      setUser({ ...user, isLoggedIn: true, email, plan: 'free' });
+      // Logic for demo: reset onboarding on login to demonstrate feature
+      setUser({ ...user, isLoggedIn: true, email, plan: 'basic', hasOnboarded: false });
       setView('dashboard');
   };
 
   const logout = () => {
-      setUser({ ...user, isLoggedIn: false, email: null, plan: 'free' });
+      setUser({ ...user, isLoggedIn: false, email: null });
       setView('landing');
   };
 
   const upgradePlan = (plan: UserPlan) => {
-      setUser({ ...user, plan });
-      setShowPricingModal(false);
+      setUser(prev => ({ ...prev, plan }));
   };
-  
+
   const toggleSocialConnection = (platform: keyof ConnectedAccounts) => {
       setUser(prev => ({
           ...prev,
@@ -1784,49 +1929,49 @@ const App = () => {
           }
       }));
   };
-  
-  const addProject = (project: Project) => {
-      setProjects(prev => [project, ...prev]);
+
+  const completeOnboarding = () => {
+      setUser(prev => ({ ...prev, hasOnboarded: true }));
   };
   
-  const handleTemplateSelect = (template: Template) => {
-      setSelectedTemplate(template);
-      setView('editor');
+  const addProject = (p: Project) => {
+      setProjects(prev => [p, ...prev]);
   };
 
+  // Scroll to top on view change
+  useEffect(() => {
+      window.scrollTo(0, 0);
+  }, [view]);
+
   return (
-    <AppContext.Provider value={{ lang, setLang, t, user, login, logout, upgradePlan, toggleSocialConnection, showPricingModal, setShowPricingModal, projects, addProject }}>
-      <div className="min-h-screen font-sans text-vuca-navy bg-white">
+    <AppContext.Provider value={{ lang, setLang, t, user, login, logout, upgradePlan, toggleSocialConnection, completeOnboarding, showPricingModal, setShowPricingModal, projects, addProject }}>
+      <div className="min-h-screen bg-white text-vuca-navy font-sans selection:bg-vuca-blue selection:text-white">
+        
+        {/* Navbar Logic: Show minimal navbar for Auth/Dashboard/Profile, Full for Landing */}
         <Navbar onViewChange={setView} />
         
         <main>
           {view === 'landing' && (
             <>
-                <Hero onStart={() => setView('auth')} />
-                <SolutionSection />
-                <UseCaseSection />
-                <HomePricing />
-                <FAQ />
-                <Footer />
+              <Hero onStart={() => setView('auth')} />
+              <SolutionSection /> {/* Viral Templates Marquee */}
+              <UseCaseSection /> {/* Built-in Tools */}
+              <HomePricing />
+              <FAQ />
+              <Footer />
             </>
           )}
           
           {view === 'auth' && <AuthPage />}
           
+          {view === 'dashboard' && <Dashboard />}
+          
           {view === 'profile' && <ProfilePage />}
-          
-          {view === 'dashboard' && <Dashboard onSelectTemplate={handleTemplateSelect} />}
-          
-          {view === 'editor' && selectedTemplate && (
-            <Editor template={selectedTemplate} onBack={() => setView('dashboard')} />
-          )}
         </main>
 
+        <PricingModal />
+        <OnboardingModal />
         <WhatsAppFloat />
-
-        {showPricingModal && (
-            <PricingModal onClose={() => setShowPricingModal(false)} onUpgrade={upgradePlan} />
-        )}
       </div>
     </AppContext.Provider>
   );
