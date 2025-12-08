@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GoogleGenAI, Modality } from "@google/genai";
@@ -252,6 +251,11 @@ const urlToBase64 = async (url: string): Promise<string> => {
       throw error;
   }
 };
+
+const getApiKey = (): string => {
+  // @ts-ignore
+  return import.meta.env.VITE_API_KEY || "";
+}
 
 // --- Visual Components ---
 
@@ -1236,8 +1240,9 @@ const ProductAnalyzer = ({ onRecommend }: { onRecommend: (category: string) => v
         if(!description) return;
         setIsAnalyzing(true);
         try {
-            if (!process.env.API_KEY) {
-                alert("API Key missing. Simulating analysis.");
+            const apiKey = getApiKey();
+            if (!apiKey) {
+                alert("Missing VITE_API_KEY in Vercel Environment Variables.");
                 setTimeout(() => {
                     onRecommend('Tech');
                     setIsAnalyzing(false);
@@ -1245,7 +1250,7 @@ const ProductAnalyzer = ({ onRecommend }: { onRecommend: (category: string) => v
                 return;
             }
 
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const ai = new GoogleGenAI({ apiKey });
             const prompt = `Analyze this product description: "${description}". 
             Recommend the SINGLE best video category from this list: [Fashion, Tech, Food, Beauty, Home, Fitness, Gaming]. 
             Return ONLY the category name.`;
@@ -1335,13 +1340,14 @@ const Editor = ({ templateId, onBack }: { templateId: string, onBack: () => void
         
         try {
             // Check API Key
-            if (!process.env.API_KEY) {
-                alert("Missing API Key. Please add API_KEY to your environment variables.");
+            const apiKey = getApiKey();
+            if (!apiKey) {
+                alert("Missing API Key. Please add VITE_API_KEY to your Vercel Environment Variables.");
                 setIsGenerating(false);
                 return;
             }
 
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const ai = new GoogleGenAI({ apiKey });
             
             const prompt = `Create a viral short video script (Hook, Value, CTA) for a product described as: ${productUrl}. 
             The template style is ${template.title}. Keep it under ${template.duration}. 
@@ -1359,11 +1365,11 @@ const Editor = ({ templateId, onBack }: { templateId: string, onBack: () => void
                 setScript(text);
                 setStep(2);
             } else {
-                 alert("Failed to generate script. Please try again.");
+                 alert("Failed to generate script. API returned empty response.");
             }
         } catch (error: any) {
             console.error("Generation Error:", error);
-            alert(`Error generating script: ${error.message || "Unknown error"}`);
+            alert(`Error generating script: ${error.message || "Unknown error"}. Check console for details.`);
         } finally {
             setIsGenerating(false);
         }
@@ -1397,8 +1403,9 @@ const Editor = ({ templateId, onBack }: { templateId: string, onBack: () => void
 
     const handleGenerateAudio = async () => {
         // Mock TTS generation for preview
-        if (!process.env.API_KEY) {
-             alert("Missing API Key");
+        const apiKey = getApiKey();
+        if (!apiKey) {
+             alert("Missing VITE_API_KEY");
              return;
         }
         setAudioUrl("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"); // Mock
